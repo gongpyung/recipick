@@ -25,56 +25,6 @@ export interface RecipeDetails {
   confidence: RecipeConfidence;
 }
 
-interface RecipeIdQueryBuilder {
-  eq(column: 'extraction_id', value: string): {
-    maybeSingle(): Promise<{
-      data: { id: string } | null;
-      error: PostgrestError | null;
-    }>;
-  };
-}
-
-interface RecipeRowQueryBuilder {
-  eq(column: 'id', value: string): {
-    maybeSingle(): Promise<{
-      data: RecipeRow | null;
-      error: PostgrestError | null;
-    }>;
-  };
-}
-
-interface RecipesTableClient {
-  select(columns: 'id'): RecipeIdQueryBuilder;
-  select(columns: string): RecipeRowQueryBuilder;
-}
-
-interface RelatedRowsQueryBuilder<Row> {
-  eq(column: 'recipe_id', value: string): {
-    order(
-      column: string,
-      options: { ascending: boolean },
-    ): Promise<{
-      data: Row[] | null;
-      error: PostgrestError | null;
-    }>;
-  };
-}
-
-interface RelatedTableClient<Row> {
-  select(columns: string): RelatedRowsQueryBuilder<Row>;
-}
-
-interface SupabaseSubset {
-  from(table: 'recipes'): RecipesTableClient;
-  from(table: 'ingredients'): RelatedTableClient<IngredientRow>;
-  from(table: 'steps'): RelatedTableClient<StepRow>;
-  from(table: 'warnings'): RelatedTableClient<WarningRow>;
-}
-
-function getSupabase() {
-  return getSupabaseServerClient() as unknown as SupabaseSubset;
-}
-
 function assertNoSupabaseError(error: PostgrestError | null) {
   if (error) {
     throw new Error(error.message);
