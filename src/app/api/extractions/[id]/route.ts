@@ -2,8 +2,10 @@ import { errorResponse, successResponse } from '@/lib/api/response';
 import {
   ExtractionErrorCode,
   getExtractionErrorMessage,
+  getExtractionErrorStatus,
 } from '@/lib/extraction/errors';
 import { getExtraction } from '@/lib/extraction/service';
+import { getRecipeIdByExtractionId } from '@/lib/recipe/service';
 
 export async function GET(
   _request: Request,
@@ -14,9 +16,9 @@ export async function GET(
 
   if (!extraction) {
     return errorResponse(
-      ExtractionErrorCode.VIDEO_NOT_FOUND,
-      '추출 작업을 찾을 수 없습니다.',
-      404,
+      ExtractionErrorCode.EXTRACTION_NOT_FOUND,
+      getExtractionErrorMessage(ExtractionErrorCode.EXTRACTION_NOT_FOUND),
+      getExtractionErrorStatus(ExtractionErrorCode.EXTRACTION_NOT_FOUND),
     );
   }
 
@@ -32,9 +34,20 @@ export async function GET(
   }
 
   if (extraction.status === 'completed') {
+    const recipeId = await getRecipeIdByExtractionId(extraction.id);
+
+    if (!recipeId) {
+      return errorResponse(
+        ExtractionErrorCode.INTERNAL_ERROR,
+        getExtractionErrorMessage(ExtractionErrorCode.INTERNAL_ERROR),
+        getExtractionErrorStatus(ExtractionErrorCode.INTERNAL_ERROR),
+      );
+    }
+
     return successResponse({
       extractionId: extraction.id,
       status: extraction.status,
+      recipeId,
     });
   }
 

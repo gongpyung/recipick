@@ -7,7 +7,10 @@ export enum ExtractionErrorCode {
   INVALID_URL = 'INVALID_URL',
   UNSUPPORTED_URL = 'UNSUPPORTED_URL',
   VIDEO_NOT_FOUND = 'VIDEO_NOT_FOUND',
+  EXTRACTION_NOT_FOUND = 'EXTRACTION_NOT_FOUND',
+  RECIPE_NOT_FOUND = 'RECIPE_NOT_FOUND',
   CAPTIONS_NOT_AVAILABLE = 'CAPTIONS_NOT_AVAILABLE',
+  INSUFFICIENT_SOURCE_TEXT = 'INSUFFICIENT_SOURCE_TEXT',
   METADATA_FETCH_FAILED = 'METADATA_FETCH_FAILED',
   QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
   EXTRACTION_TIMEOUT = 'EXTRACTION_TIMEOUT',
@@ -39,10 +42,25 @@ const EXTRACTION_ERROR_DEFINITIONS: Record<
     category: 'upstream_error',
     message: '영상을 찾을 수 없습니다.',
   },
+  [ExtractionErrorCode.EXTRACTION_NOT_FOUND]: {
+    status: 404,
+    category: 'user_error',
+    message: '추출 작업을 찾을 수 없습니다.',
+  },
+  [ExtractionErrorCode.RECIPE_NOT_FOUND]: {
+    status: 404,
+    category: 'user_error',
+    message: '레시피를 찾을 수 없습니다.',
+  },
   [ExtractionErrorCode.CAPTIONS_NOT_AVAILABLE]: {
     status: 422,
     category: 'user_error',
     message: '사용 가능한 자막이 없습니다.',
+  },
+  [ExtractionErrorCode.INSUFFICIENT_SOURCE_TEXT]: {
+    status: 422,
+    category: 'user_error',
+    message: '자막 또는 설명 정보가 부족합니다.',
   },
   [ExtractionErrorCode.METADATA_FETCH_FAILED]: {
     status: 502,
