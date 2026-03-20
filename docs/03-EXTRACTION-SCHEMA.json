@@ -1,0 +1,247 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://youtube-recipe-ai.local/schemas/recipe-extraction.json",
+  "title": "RecipeExtraction",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "title",
+    "source",
+    "baseServings",
+    "ingredients",
+    "steps",
+    "tips",
+    "warnings",
+    "confidence"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "youtubeUrl",
+        "videoId",
+        "sourceType"
+      ],
+      "properties": {
+        "youtubeUrl": {
+          "type": "string",
+          "format": "uri"
+        },
+        "videoId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceType": {
+          "type": "string",
+          "enum": [
+            "video",
+            "shorts"
+          ]
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "baseServings": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0.25
+    },
+    "summary": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "ingredients": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "amount",
+          "unit",
+          "scalable",
+          "note",
+          "confidence"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "amount": {
+            "type": [
+              "number",
+              "null"
+            ],
+            "minimum": 0
+          },
+          "amountText": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "unit": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "scalable": {
+            "type": "boolean"
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stepNo",
+          "text",
+          "confidence"
+        ],
+        "properties": {
+          "stepNo": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1
+          },
+          "note": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        }
+      }
+    },
+    "tips": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "code",
+          "message",
+          "severity"
+        ],
+        "properties": {
+          "code": {
+            "type": "string",
+            "enum": [
+              "MISSING_QUANTITY",
+              "MISSING_BASE_SERVINGS",
+              "LOW_CONFIDENCE_INGREDIENT",
+              "LOW_CONFIDENCE_STEP",
+              "MULTIPLE_DISHES_DETECTED",
+              "NON_RECIPE_VIDEO",
+              "INSUFFICIENT_SOURCE_TEXT",
+              "OCR_REQUIRED_BUT_DISABLED"
+            ]
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "warning",
+              "error"
+            ]
+          }
+        }
+      }
+    },
+    "confidence": {
+      "type": "string",
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "extractionMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "usedSources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "title",
+              "description",
+              "captions",
+              "asr",
+              "ocr",
+              "vision"
+            ]
+          }
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "extractorVersion": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
+  }
+}
