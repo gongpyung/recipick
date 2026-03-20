@@ -82,24 +82,28 @@ function assertNoSupabaseError(error: PostgrestError | null) {
 }
 
 export async function getRecipeIdByExtractionId(extractionId: string) {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
+  const supabase = getSupabaseServerClient();
+  const result = await supabase
     .from('recipes')
     .select('id')
     .eq('extraction_id', extractionId)
     .maybeSingle();
+  const data = result.data as Pick<RecipeRow, 'id'> | null;
+  const error = result.error;
 
   assertNoSupabaseError(error);
   return data?.id ?? null;
 }
 
 export async function getRecipe(recipeId: string): Promise<RecipeDetails | null> {
-  const supabase = getSupabase();
-  const { data: recipe, error: recipeError } = await supabase
+  const supabase = getSupabaseServerClient();
+  const recipeResult = await supabase
     .from('recipes')
     .select('*')
     .eq('id', recipeId)
     .maybeSingle();
+  const recipe = recipeResult.data as RecipeRow | null;
+  const recipeError = recipeResult.error;
 
   assertNoSupabaseError(recipeError);
 
@@ -129,34 +133,35 @@ export async function getRecipe(recipeId: string): Promise<RecipeDetails | null>
   assertNoSupabaseError(stepsResult.error);
   assertNoSupabaseError(warningsResult.error);
 
+  const ingredients = (ingredientsResult.data ?? []) as IngredientRow[];
+  const steps = (stepsResult.data ?? []) as StepRow[];
+  const warnings = (warningsResult.data ?? []) as WarningRow[];
+
   return {
     id: recipe.id,
     title: recipe.title,
     baseServings: recipe.base_servings,
-    ingredients:
-      ingredientsResult.data?.map((ingredient) => ({
-        name: ingredient.name,
-        amount: ingredient.amount_value,
-        amountText: ingredient.amount_text,
-        unit: ingredient.unit,
-        scalable: ingredient.scalable,
-        note: ingredient.note,
-        confidence: ingredient.confidence,
-      })) ?? [],
-    steps:
-      stepsResult.data?.map((step) => ({
-        stepNo: step.step_no,
-        text: step.text,
-        note: step.note,
-        confidence: step.confidence,
-      })) ?? [],
+    ingredients: ingredients.map((ingredient) => ({
+      name: ingredient.name,
+      amount: ingredient.amount_value,
+      amountText: ingredient.amount_text,
+      unit: ingredient.unit,
+      scalable: ingredient.scalable,
+      note: ingredient.note,
+      confidence: ingredient.confidence,
+    })),
+    steps: steps.map((step) => ({
+      stepNo: step.step_no,
+      text: step.text,
+      note: step.note,
+      confidence: step.confidence,
+    })),
     tips: recipe.tips_json,
-    warnings:
-      warningsResult.data?.map((warning) => ({
-        code: warning.code,
-        message: warning.message,
-        severity: warning.severity,
-      })) ?? [],
+    warnings: warnings.map((warning) => ({
+      code: warning.code,
+      message: warning.message,
+      severity: warning.severity,
+    })),
     confidence: recipe.confidence,
   };
 }
