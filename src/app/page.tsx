@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import { Button } from '@/components/ui/button';
 
 export default function Home() {
@@ -33,7 +35,10 @@ export default function Home() {
             ))}
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Button nativeButton={false} render={<a href="/api/extractions" />}>
+            <Button
+              nativeButton={false}
+              render={<Link href="/api/extractions" />}
+            >
               API 준비 상태 보기
             </Button>
             <Button

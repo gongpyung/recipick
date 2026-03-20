@@ -58,5 +58,3 @@ export function readEnv(): AppEnv {
 export function resetEnvForTests() {
   cachedEnv = null;
 }
-
-export const env = readEnv();

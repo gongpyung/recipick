@@ -35,8 +35,8 @@ describe('env', () => {
     delete process.env.SUPABASE_SERVICE_ROLE_KEY;
     delete process.env.YOUTUBE_API_KEY;
 
-    await expect(loadEnvModule()).rejects.toThrow(
-      /Invalid environment variables:/,
-    );
+    const { readEnv } = await loadEnvModule();
+
+    expect(() => readEnv()).toThrow(/Invalid environment variables:/);
   });
 });
