@@ -2,7 +2,7 @@ import { readEnv } from '@/lib/env'
 import { extractTextFromLlmPayload } from '@/lib/llm/json-parser'
 
 const DEFAULT_ZAI_MODEL = 'glm-4.5-air'
-const DEFAULT_TIMEOUT_MS = 25_000
+const DEFAULT_TIMEOUT_MS = 90_000
 const DEFAULT_MAX_ATTEMPTS = 2
 const RETRY_BASE_DELAY_MS = 300
 const JSON_OBJECT_RESPONSE_FORMAT = {
