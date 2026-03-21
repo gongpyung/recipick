@@ -1,74 +1,71 @@
-import type { PostgrestError } from '@supabase/supabase-js';
+import type { PostgrestError } from '@supabase/supabase-js'
 
-import { getSupabaseServerClient } from '@/lib/supabase/client';
+import {
+  ExtractorError,
+  extractStructuredRecipe,
+} from '@/lib/extraction/extractor'
+import {
+  ExtractionErrorCode,
+  getExtractionErrorMessage,
+  getExtractionErrorStatus,
+} from '@/lib/extraction/errors'
+import { normalizeStructuredRecipe } from '@/lib/extraction/normalizer'
+import type {
+  ExtractionRecord,
+  ExtractionStage,
+  ExtractionStatus,
+  StructuredRecipe,
+} from '@/lib/extraction/types'
+import { LlmClientError } from '@/lib/llm/client'
+import { saveRecipeAggregate } from '@/lib/recipe/service'
+import { getSupabaseServerClient } from '@/lib/supabase/client'
 import type {
   ExtractionInsert,
   ExtractionRow,
   ExtractionUpdate,
   VideoInsert,
   VideoRow,
-} from '@/lib/supabase/types';
-import type {
-  ExtractionRecord,
-  ExtractionStage,
-  ExtractionStatus,
-} from '@/lib/extraction/types';
-import {
-  ExtractionErrorCode,
-  getExtractionErrorMessage,
-  getExtractionErrorStatus,
-} from '@/lib/extraction/errors';
-import { parseYouTubeUrl } from '@/lib/youtube/url-parser';
+} from '@/lib/supabase/types'
 import {
   fetchCaptions,
   fetchVideoMetadata,
   YouTubeApiError,
-} from '@/lib/youtube/api-client';
-import { cleanYouTubeText } from '@/lib/youtube/text-cleaner';
+} from '@/lib/youtube/api-client'
+import { cleanYouTubeText } from '@/lib/youtube/text-cleaner'
+import { parseYouTubeUrl } from '@/lib/youtube/url-parser'
 
-const EXTRACTION_TTL_MS = 24 * 60 * 60 * 1_000;
-const PIPELINE_TIMEOUT_MS = 8_000;
-const EXTRACTOR_VERSION = 'step1-foundation';
-
-class ExtractionServiceError extends Error {
-  constructor(
-    public readonly code: ExtractionErrorCode,
-    message?: string,
-    public readonly status = getExtractionErrorStatus(code),
-    options?: ErrorOptions,
-  ) {
-    super(message ?? getExtractionErrorMessage(code), options);
-    this.name = 'ExtractionServiceError';
-  }
-}
+const EXTRACTION_TTL_MS = 24 * 60 * 60 * 1_000
+const PIPELINE_TIMEOUT_MS = 90_000
+const EXTRACTOR_VERSION = 'step2-ai-engine'
+const MIN_SOURCE_TEXT_CHARS = 40
 
 interface VideoQueryBuilder {
   eq(column: 'youtube_id', value: string): {
     maybeSingle(): Promise<{
-      data: VideoRow | null;
-      error: PostgrestError | null;
-    }>;
-  };
+      data: VideoRow | null
+      error: PostgrestError | null
+    }>
+  }
 }
 
 interface VideoUpsertBuilder {
   select(columns: string): {
     single(): Promise<{
-      data: VideoRow;
-      error: PostgrestError | null;
-    }>;
-  };
+      data: VideoRow
+      error: PostgrestError | null
+    }>
+  }
 }
 
 interface VideosTableClient {
-  select(columns: string): VideoQueryBuilder;
-  upsert(values: VideoInsert, options: { onConflict: string }): VideoUpsertBuilder;
+  select(columns: string): VideoQueryBuilder
+  upsert(values: VideoInsert, options: { onConflict: string }): VideoUpsertBuilder
 }
 
 interface ExtractionEqBuilder {
   eq(column: 'id', value: string): Promise<{
-    error: PostgrestError | null;
-  }>;
+    error: PostgrestError | null
+  }>
 }
 
 interface ExtractionListBuilder {
@@ -78,70 +75,101 @@ interface ExtractionListBuilder {
       options: { ascending: boolean },
     ): {
       limit(limit: number): Promise<{
-        data: ExtractionRow[] | null;
-        error: PostgrestError | null;
-      }>;
-    };
-  };
+        data: ExtractionRow[] | null
+        error: PostgrestError | null
+      }>
+    }
+  }
   eq(column: 'id', value: string): {
     maybeSingle(): Promise<{
-      data: ExtractionRecord | null;
-      error: PostgrestError | null;
-    }>;
-  };
+      data: ExtractionRecord | null
+      error: PostgrestError | null
+    }>
+  }
 }
 
 interface ExtractionsTableClient {
-  update(values: ExtractionUpdate): ExtractionEqBuilder;
-  select(columns: string): ExtractionListBuilder;
+  update(values: ExtractionUpdate): ExtractionEqBuilder
+  select(columns: string): ExtractionListBuilder
   insert(values: ExtractionInsert): {
     select(columns: string): {
       single(): Promise<{
-        data: ExtractionRow;
-        error: PostgrestError | null;
-      }>;
-    };
-  };
+        data: ExtractionRow
+        error: PostgrestError | null
+      }>
+    }
+  }
 }
 
 interface SupabaseSubset {
-  from(table: 'videos'): VideosTableClient;
-  from(table: 'extractions'): ExtractionsTableClient;
+  from(table: 'videos'): VideosTableClient
+  from(table: 'extractions'): ExtractionsTableClient
 }
 
-function getSupabase() {
-  return getSupabaseServerClient() as unknown as SupabaseSubset;
+interface ExtractionServiceErrorOptions extends ErrorOptions {
+  status?: number
+  details?: Record<string, unknown>
+}
+
+class ExtractionServiceError extends Error {
+  public readonly status: number
+  public readonly details?: Record<string, unknown>
+
+  constructor(
+    public readonly code: ExtractionErrorCode,
+    message?: string,
+    options?: ExtractionServiceErrorOptions,
+  ) {
+    super(message ?? getExtractionErrorMessage(code), options)
+    this.name = 'ExtractionServiceError'
+    this.status = options?.status ?? getExtractionErrorStatus(code)
+    this.details = options?.details
+  }
+}
+
+function getSupabase(): SupabaseSubset {
+  const client: unknown = getSupabaseServerClient()
+  return client as SupabaseSubset
+}
+
+function createPipelineController(timeoutMs: number) {
+  const controller = new AbortController()
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs)
+
+  return {
+    signal: controller.signal,
+    cleanup: () => clearTimeout(timeoutId),
+  }
 }
 
 function abortableFetch(signal: AbortSignal): typeof fetch {
   return async (input, init) => {
-    const nestedController = new AbortController();
-
-    const abort = () => nestedController.abort(signal.reason);
+    const nestedController = new AbortController()
+    const abort = () => nestedController.abort(signal.reason)
 
     if (signal.aborted) {
-      abort();
+      abort()
     } else {
-      signal.addEventListener('abort', abort, { once: true });
+      signal.addEventListener('abort', abort, { once: true })
     }
 
     try {
       return await fetch(input, {
         ...init,
         signal: nestedController.signal,
-      });
+      })
     } finally {
-      signal.removeEventListener('abort', abort);
+      signal.removeEventListener('abort', abort)
     }
-  };
+  }
 }
 
 function isActiveStatus(status: ExtractionStatus) {
-  return status === 'queued' || status === 'processing';
+  return status === 'queued' || status === 'processing'
 }
 
 function isFresh(updatedAt: string) {
-  return Date.now() - new Date(updatedAt).getTime() <= EXTRACTION_TTL_MS;
+  return Date.now() - new Date(updatedAt).getTime() <= EXTRACTION_TTL_MS
 }
 
 function mapUrlErrorToCode(error: string | undefined) {
@@ -150,15 +178,74 @@ function mapUrlErrorToCode(error: string | undefined) {
     error?.includes('Unsupported YouTube') ||
     error?.includes('Unsupported YouTube URL format')
   ) {
-    return ExtractionErrorCode.UNSUPPORTED_URL;
+    return ExtractionErrorCode.UNSUPPORTED_URL
   }
 
-  return ExtractionErrorCode.INVALID_URL;
+  return ExtractionErrorCode.INVALID_URL
+}
+
+function assertNoSupabaseError(error: PostgrestError | null) {
+  if (error) {
+    throw new ExtractionServiceError(
+      ExtractionErrorCode.INTERNAL_ERROR,
+      error.message,
+      {
+        status: 500,
+        cause: error,
+      },
+    )
+  }
+}
+
+function mergeDebugPayload(
+  current: Record<string, unknown> | null,
+  patch: Record<string, unknown> | undefined,
+) {
+  if (!patch) {
+    return current
+  }
+
+  return {
+    ...(current ?? {}),
+    ...patch,
+  }
+}
+
+function summarizeCleanedText(cleanedText: ReturnType<typeof cleanYouTubeText>) {
+  return {
+    combinedLength: cleanedText.combinedText.length,
+    descriptionLength: cleanedText.descriptionText.length,
+    captionLength: cleanedText.captionText?.length ?? 0,
+    usedSources: cleanedText.usedSources,
+    combinedPreview: cleanedText.combinedText.slice(0, 1_500),
+  }
 }
 
 function mapUpstreamError(error: unknown) {
   if (error instanceof ExtractionServiceError) {
-    return error;
+    return error
+  }
+
+  if (error instanceof ExtractorError) {
+    return new ExtractionServiceError(error.code, error.message, {
+      cause: error,
+      details: error.details,
+    })
+  }
+
+  if (error instanceof LlmClientError) {
+    const code =
+      error.code === 'LLM_RATE_LIMITED'
+        ? ExtractionErrorCode.LLM_RATE_LIMITED
+        : error.code === 'INVALID_MODEL_OUTPUT'
+          ? ExtractionErrorCode.INVALID_MODEL_OUTPUT
+          : ExtractionErrorCode.LLM_REQUEST_FAILED
+
+    return new ExtractionServiceError(code, error.message, {
+      status: error.status,
+      cause: error,
+      details: error.details,
+    })
   }
 
   if (error instanceof YouTubeApiError) {
@@ -167,20 +254,23 @@ function mapUpstreamError(error: unknown) {
         return new ExtractionServiceError(
           ExtractionErrorCode.QUOTA_EXCEEDED,
           error.message,
-        );
+          { cause: error },
+        )
       case 'VIDEO_NOT_FOUND':
         return new ExtractionServiceError(
           ExtractionErrorCode.VIDEO_NOT_FOUND,
           error.message,
-        );
+          { cause: error },
+        )
       case 'METADATA_FETCH_FAILED':
       case 'CAPTIONS_FETCH_FAILED':
         return new ExtractionServiceError(
           ExtractionErrorCode.METADATA_FETCH_FAILED,
           error.message,
-        );
+          { cause: error },
+        )
       default:
-        return new ExtractionServiceError(ExtractionErrorCode.INTERNAL_ERROR);
+        return new ExtractionServiceError(ExtractionErrorCode.INTERNAL_ERROR)
     }
   }
 
@@ -188,96 +278,14 @@ function mapUpstreamError(error: unknown) {
     return new ExtractionServiceError(
       ExtractionErrorCode.EXTRACTION_TIMEOUT,
       '추출 처리 시간이 초과되었습니다.',
-    );
+      {
+        status: 504,
+        cause: error,
+      },
+    )
   }
 
-  return new ExtractionServiceError(ExtractionErrorCode.INTERNAL_ERROR);
-}
-
-function assertNoSupabaseError(error: PostgrestError | null) {
-  if (error) {
-    throw new ExtractionServiceError(
-      ExtractionErrorCode.INTERNAL_ERROR,
-      error.message,
-      500,
-      { cause: error },
-    );
-  }
-}
-
-async function updateExtractionRecord(
-  extractionId: string,
-  patch: ExtractionUpdate,
-) {
-  const supabase = getSupabase();
-  const { error } = await supabase
-    .from('extractions')
-    .update({
-      ...patch,
-      updated_at: new Date().toISOString(),
-    })
-    .eq('id', extractionId);
-
-  assertNoSupabaseError(error);
-}
-
-async function fetchExistingVideo(youtubeId: string) {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('videos')
-    .select('*')
-    .eq('youtube_id', youtubeId)
-    .maybeSingle();
-
-  assertNoSupabaseError(error);
-  return data;
-}
-
-async function fetchRecentExtractions(videoId: string) {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('extractions')
-    .select('*')
-    .eq('video_id', videoId)
-    .order('updated_at', { ascending: false })
-    .limit(10);
-
-  assertNoSupabaseError(error);
-  return data ?? [];
-}
-
-async function upsertVideo(video: VideoInsert) {
-  const supabase = getSupabase();
-  const { data, error } = await supabase
-    .from('videos')
-    .upsert(video, {
-      onConflict: 'youtube_id',
-    })
-    .select('*')
-    .single();
-
-  assertNoSupabaseError(error);
-  return data;
-}
-
-async function createQueuedExtraction(videoId: string) {
-  const supabase = getSupabase();
-  const now = new Date().toISOString();
-  const { data, error } = await supabase
-    .from('extractions')
-    .insert({
-      video_id: videoId,
-      status: 'queued',
-      stage: 'validating_url',
-      extractor_version: EXTRACTOR_VERSION,
-      created_at: now,
-      updated_at: now,
-    })
-    .select('*')
-    .single();
-
-  assertNoSupabaseError(error);
-  return data;
+  return new ExtractionServiceError(ExtractionErrorCode.INTERNAL_ERROR)
 }
 
 function selectReusableExtraction(extractions: ExtractionRow[]) {
@@ -288,125 +296,107 @@ function selectReusableExtraction(extractions: ExtractionRow[]) {
         extraction.status === 'completed' && isFresh(extraction.updated_at),
     ) ??
     null
-  );
+  )
 }
 
-async function runPipeline(
-  youtubeUrl: string,
-  options?: { forceReExtract?: boolean },
+async function updateExtractionRecord(
+  extractionId: string,
+  patch: ExtractionUpdate,
 ) {
-  const parsed = parseYouTubeUrl(youtubeUrl);
+  const supabase = getSupabase()
+  const { error } = await supabase
+    .from('extractions')
+    .update({
+      ...patch,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', extractionId)
 
-  if (!parsed.isValid || !parsed.videoId || !parsed.sourceType) {
-    throw new ExtractionServiceError(mapUrlErrorToCode(parsed.error), parsed.error);
+  assertNoSupabaseError(error)
+}
+
+async function fetchExistingVideo(youtubeId: string) {
+  const supabase = getSupabase()
+  const { data, error } = await supabase
+    .from('videos')
+    .select('*')
+    .eq('youtube_id', youtubeId)
+    .maybeSingle()
+
+  assertNoSupabaseError(error)
+  return data
+}
+
+async function fetchRecentExtractions(videoId: string) {
+  const supabase = getSupabase()
+  const { data, error } = await supabase
+    .from('extractions')
+    .select('*')
+    .eq('video_id', videoId)
+    .order('updated_at', { ascending: false })
+    .limit(10)
+
+  assertNoSupabaseError(error)
+  return data ?? []
+}
+
+async function upsertVideo(video: VideoInsert) {
+  const supabase = getSupabase()
+  const { data, error } = await supabase
+    .from('videos')
+    .upsert(video, {
+      onConflict: 'youtube_id',
+    })
+    .select('*')
+    .single()
+
+  assertNoSupabaseError(error)
+  return data
+}
+
+async function createQueuedExtraction(videoId: string) {
+  const supabase = getSupabase()
+  const now = new Date().toISOString()
+  const payload: ExtractionInsert = {
+    video_id: videoId,
+    status: 'queued',
+    stage: 'validating_url',
+    extractor_version: EXTRACTOR_VERSION,
+    created_at: now,
+    updated_at: now,
   }
+  const { data, error } = await supabase
+    .from('extractions')
+    .insert(payload)
+    .select('*')
+    .single()
 
-  const existingVideo = await fetchExistingVideo(parsed.videoId);
+  assertNoSupabaseError(error)
+  return data
+}
 
-  if (existingVideo && !options?.forceReExtract) {
-    const reusableExtraction = selectReusableExtraction(
-      await fetchRecentExtractions(existingVideo.id),
-    );
+function ensureSufficientSourceText(cleanedText: ReturnType<typeof cleanYouTubeText>) {
+  const condensedLength = cleanedText.combinedText.replace(/\s/g, '').length
 
-    if (reusableExtraction) {
-      return {
-        extractionId: reusableExtraction.id,
-        status: reusableExtraction.status,
-        stage: reusableExtraction.stage,
-        cached: true,
-      };
-    }
+  if (condensedLength < MIN_SOURCE_TEXT_CHARS) {
+    throw new ExtractionServiceError(
+      ExtractionErrorCode.INSUFFICIENT_SOURCE_TEXT,
+      getExtractionErrorMessage(ExtractionErrorCode.INSUFFICIENT_SOURCE_TEXT),
+    )
   }
+}
 
-  const video = (await upsertVideo({
-    youtube_url: youtubeUrl,
-    youtube_id: parsed.videoId,
-    source_type: parsed.sourceType,
-  })) as VideoRow;
+function ensureRecipeVideo(recipe: StructuredRecipe) {
+  const nonRecipeWarning = recipe.warnings.find(
+    (warning: StructuredRecipe['warnings'][number]) =>
+      warning.code === 'NON_RECIPE_VIDEO' && warning.severity === 'error',
+  )
 
-  const extraction = await createQueuedExtraction(video.id);
-  const stageStartedAt = Date.now();
-  const stageDurations: Partial<Record<ExtractionStage, number>> = {};
-  const fetchImpl = abortableFetch(AbortSignal.timeout(PIPELINE_TIMEOUT_MS));
-
-  try {
-    await updateExtractionRecord(extraction.id, {
-      status: 'processing',
-      stage: 'fetching_metadata',
-    });
-
-    const metadataStartedAt = Date.now();
-    const metadata = await fetchVideoMetadata(parsed.videoId, { fetchImpl });
-    stageDurations.fetching_metadata = Date.now() - metadataStartedAt;
-
-    await upsertVideo({
-      id: video.id,
-      youtube_url: youtubeUrl,
-      youtube_id: parsed.videoId,
-      source_type: parsed.sourceType,
-      title: metadata.title,
-      thumbnail_url: metadata.thumbnailUrl,
-      description_text: metadata.description,
-      source_language: metadata.language,
-    });
-
-    await updateExtractionRecord(extraction.id, {
-      status: 'processing',
-      stage: 'fetching_captions',
-    });
-
-    const captionsStartedAt = Date.now();
-    const captions = await fetchCaptions(parsed.videoId, { fetchImpl });
-    stageDurations.fetching_captions = Date.now() - captionsStartedAt;
-
-    if (captions) {
-      await upsertVideo({
-        id: video.id,
-        youtube_url: youtubeUrl,
-        youtube_id: parsed.videoId,
-        source_type: parsed.sourceType,
-        caption_text: captions.text,
-        source_language: captions.language ?? metadata.language,
-      });
-    }
-
-    const cleanedText = cleanYouTubeText({
-      title: metadata.title,
-      description: metadata.description,
-      captions: captions?.text,
-    });
-
-    stageDurations.structuring = Date.now() - stageStartedAt;
-
-    await updateExtractionRecord(extraction.id, {
-      status: 'processing',
-      stage: 'structuring',
-      raw_output_json: {
-        cleanedText,
-        metadata,
-        captions,
-        timings: stageDurations,
-      },
-      extractor_version: EXTRACTOR_VERSION,
-    });
-
-    return {
-      extractionId: extraction.id,
-      status: 'processing' as const,
-      stage: 'structuring' as const,
-      cached: false,
-    };
-  } catch (error) {
-    const mappedError = mapUpstreamError(error);
-
-    await updateExtractionRecord(extraction.id, {
-      status: 'failed',
-      stage: null,
-      error_code: mappedError.code,
-      error_message: mappedError.message,
-    });
-
-    throw mappedError;
+  if (nonRecipeWarning) {
+    throw new ExtractionServiceError(
+      ExtractionErrorCode.NON_RECIPE_VIDEO,
+      nonRecipeWarning.message,
+    )
   }
 }
 
@@ -414,19 +404,240 @@ export async function createExtraction(
   youtubeUrl: string,
   options?: { forceReExtract?: boolean },
 ) {
-  return runPipeline(youtubeUrl, options);
+  const parsed = parseYouTubeUrl(youtubeUrl)
+  const videoId = parsed.videoId
+  const sourceType = parsed.sourceType
+
+  if (!parsed.isValid || !videoId || !sourceType) {
+    throw new ExtractionServiceError(mapUrlErrorToCode(parsed.error), parsed.error)
+  }
+
+  const existingVideo = await fetchExistingVideo(videoId)
+
+  if (existingVideo && !options?.forceReExtract) {
+    const reusableExtraction = selectReusableExtraction(
+      await fetchRecentExtractions(existingVideo.id),
+    )
+
+    if (reusableExtraction) {
+      return {
+        extractionId: reusableExtraction.id,
+        status: reusableExtraction.status,
+        stage: reusableExtraction.stage,
+        cached: true,
+      }
+    }
+  }
+
+  const video = await upsertVideo({
+    youtube_url: youtubeUrl,
+    youtube_id: videoId,
+    source_type: sourceType,
+  })
+  const extraction = await createQueuedExtraction(video.id)
+  const stageDurations: Partial<Record<ExtractionStage, number>> = {}
+  const pipeline = createPipelineController(PIPELINE_TIMEOUT_MS)
+  const fetchImpl = abortableFetch(pipeline.signal)
+  let rawOutputJson: Record<string, unknown> | null = null
+
+  const runStage = async <T>(
+    stage: ExtractionStage,
+    task: () => Promise<T>,
+  ): Promise<T> => {
+    await updateExtractionRecord(extraction.id, {
+      status: 'processing',
+      stage,
+      extractor_version: EXTRACTOR_VERSION,
+      raw_output_json: rawOutputJson,
+    })
+
+    const startedAt = Date.now()
+    const result = await task()
+    stageDurations[stage] = Date.now() - startedAt
+    return result
+  }
+
+  try {
+    const metadata = await runStage('fetching_metadata', () =>
+      fetchVideoMetadata(videoId, { fetchImpl }),
+    )
+
+    const captions = await runStage('fetching_captions', () =>
+      fetchCaptions(videoId, { fetchImpl }),
+    )
+
+    await upsertVideo({
+      id: video.id,
+      youtube_url: youtubeUrl,
+      youtube_id: videoId,
+      source_type: sourceType,
+      title: metadata.title,
+      thumbnail_url: metadata.thumbnailUrl,
+      description_text: metadata.description,
+      caption_text: captions?.text ?? null,
+      source_language: captions?.language ?? metadata.language,
+    })
+
+    const cleanedText = cleanYouTubeText({
+      title: metadata.title,
+      description: metadata.description,
+      captions: captions?.text,
+    })
+
+    ensureSufficientSourceText(cleanedText)
+
+    rawOutputJson = mergeDebugPayload(rawOutputJson, {
+      source: {
+        youtubeUrl,
+        videoId,
+        sourceType,
+        language: captions?.language ?? metadata.language,
+      },
+      metadata: {
+        title: metadata.title,
+        channelName: metadata.channelName,
+        durationSeconds: metadata.durationSeconds,
+      },
+      captions: captions
+        ? {
+            language: captions.language,
+            isAutoGenerated: captions.isAutoGenerated,
+          }
+        : null,
+      cleanedText: summarizeCleanedText(cleanedText),
+      timings: stageDurations,
+    })
+
+    const extracted = await runStage('structuring', async () => {
+      const result = await extractStructuredRecipe({
+        title: metadata.title,
+        cleanedText,
+        source: {
+          youtubeUrl,
+          videoId,
+          sourceType,
+          language: captions?.language ?? metadata.language,
+        },
+      })
+
+      rawOutputJson = mergeDebugPayload(rawOutputJson, {
+        llm: {
+          model: result.model,
+          attemptCount: result.attemptCount,
+          requestId: result.requestId,
+          rawOutputPreview: result.rawOutput.slice(0, 1_500),
+        },
+      })
+
+      return result
+    })
+
+    const normalizedRecipe = await runStage('normalizing', async () => {
+      const recipe = normalizeStructuredRecipe({
+        ...extracted.recipe,
+        extractionMeta: {
+          ...extracted.recipe.extractionMeta,
+          usedSources:
+            extracted.recipe.extractionMeta?.usedSources ?? cleanedText.usedSources,
+          model: extracted.model ?? extracted.recipe.extractionMeta?.model ?? null,
+          extractorVersion: EXTRACTOR_VERSION,
+        },
+      })
+
+      ensureRecipeVideo(recipe)
+      rawOutputJson = mergeDebugPayload(rawOutputJson, {
+        normalizedRecipe: {
+          title: recipe.title,
+          baseServings: recipe.baseServings,
+          ingredientCount: recipe.ingredients.length,
+          stepCount: recipe.steps.length,
+          warningCodes: recipe.warnings.map(
+            (warning: StructuredRecipe['warnings'][number]) => warning.code,
+          ),
+          confidence: recipe.confidence,
+        },
+      })
+
+      return recipe
+    })
+
+    const persistedRecipe = await runStage('saving', async () => {
+      try {
+        return await saveRecipeAggregate({
+          videoId: video.id,
+          extractionId: extraction.id,
+          recipe: normalizedRecipe,
+        })
+      } catch (error) {
+        throw new ExtractionServiceError(
+          ExtractionErrorCode.RECIPE_SAVE_FAILED,
+          getExtractionErrorMessage(ExtractionErrorCode.RECIPE_SAVE_FAILED),
+          {
+            cause: error instanceof Error ? error : undefined,
+          },
+        )
+      }
+    })
+
+    rawOutputJson = mergeDebugPayload(rawOutputJson, {
+      timings: stageDurations,
+      persistedRecipe: {
+        id: persistedRecipe.id,
+        extractionId: persistedRecipe.extractionId,
+        videoId: persistedRecipe.videoId,
+      },
+    })
+
+    await updateExtractionRecord(extraction.id, {
+      status: 'completed',
+      stage: null,
+      model_name: persistedRecipe.extractionMeta?.model ?? extracted.model ?? null,
+      extractor_version: EXTRACTOR_VERSION,
+      raw_output_json: rawOutputJson,
+      error_code: null,
+      error_message: null,
+    })
+
+    return {
+      extractionId: extraction.id,
+      status: 'completed' as const,
+      stage: null,
+      cached: false,
+    }
+  } catch (error) {
+    const mappedError = mapUpstreamError(error)
+
+    await updateExtractionRecord(extraction.id, {
+      status: 'failed',
+      stage: null,
+      extractor_version: EXTRACTOR_VERSION,
+      raw_output_json: mergeDebugPayload(rawOutputJson, {
+        timings: stageDurations,
+        failure: {
+          code: mappedError.code,
+          message: mappedError.message,
+        },
+      }),
+      error_code: mappedError.code,
+      error_message: mappedError.message,
+    })
+
+    throw mappedError
+  } finally {
+    pipeline.cleanup()
+  }
 }
 
 export async function getExtraction(
   extractionId: string,
 ): Promise<ExtractionRecord | null> {
-  const supabase = getSupabase();
+  const supabase = getSupabase()
   const { data, error } = await supabase
     .from('extractions')
     .select('*')
     .eq('id', extractionId)
-    .maybeSingle();
+    .maybeSingle()
 
-  assertNoSupabaseError(error);
-  return data;
+  assertNoSupabaseError(error)
+  return data
 }

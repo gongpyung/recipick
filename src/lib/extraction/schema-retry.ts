@@ -1,5 +1,16 @@
 import { ZodError } from 'zod';
 
+export class SchemaRetryableError extends Error {
+  constructor(
+    message: string,
+    public readonly issues: string[],
+    options?: ErrorOptions,
+  ) {
+    super(message, options);
+    this.name = 'SchemaRetryableError';
+  }
+}
+
 export class SchemaRetryExhaustedError extends Error {
   constructor(
     message: string,
@@ -28,6 +39,14 @@ function formatZodIssues(error: ZodError) {
   });
 }
 
+function formatRetryIssues(error: ZodError | SchemaRetryableError) {
+  if (error instanceof ZodError) {
+    return formatZodIssues(error);
+  }
+
+  return error.issues;
+}
+
 export async function runWithSchemaRetry<T>({
   generate,
   validate,
@@ -51,11 +70,14 @@ export async function runWithSchemaRetry<T>({
         attempts: attempt,
       };
     } catch (error) {
-      if (!(error instanceof ZodError)) {
+      if (
+        !(error instanceof ZodError) &&
+        !(error instanceof SchemaRetryableError)
+      ) {
         throw error;
       }
 
-      previousIssues = formatZodIssues(error);
+      previousIssues = formatRetryIssues(error);
 
       if (attempt === maxAttempts) {
         throw new SchemaRetryExhaustedError(
