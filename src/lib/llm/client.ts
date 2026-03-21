@@ -5,6 +5,9 @@ const DEFAULT_ZAI_MODEL = 'glm-4.5-air'
 const DEFAULT_TIMEOUT_MS = 25_000
 const DEFAULT_MAX_ATTEMPTS = 2
 const RETRY_BASE_DELAY_MS = 300
+const JSON_OBJECT_RESPONSE_FORMAT = {
+  type: 'json_object',
+} as const
 
 export type LlmErrorCode =
   | 'LLM_REQUEST_FAILED'
@@ -186,6 +189,7 @@ export async function generateText(
           model,
           temperature: 0.1,
           messages,
+          response_format: JSON_OBJECT_RESPONSE_FORMAT,
         }),
         signal,
       })

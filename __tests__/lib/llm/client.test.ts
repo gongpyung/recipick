@@ -14,6 +14,13 @@ function createJsonResponse(body: unknown, status = 200) {
   });
 }
 
+function getRequestPayload(fetchImpl: ReturnType<typeof vi.fn>, callIndex = 0) {
+  const request = fetchImpl.mock.calls[callIndex]?.[1];
+  return request && typeof request.body === 'string'
+    ? JSON.parse(request.body)
+    : null;
+}
+
 describe('generateText', () => {
   beforeEach(() => {
     process.env = {
@@ -58,6 +65,22 @@ describe('generateText', () => {
     expect(result.attempt).toBe(1);
     expect(result.model).toBe('glm-5-turbo');
     expect(result.content).toContain('김치찌개');
+    expect(fetchImpl).toHaveBeenCalledWith(
+      'https://api.z.ai/api/coding/paas/v4/chat/completions',
+      expect.objectContaining({
+        method: 'POST',
+        headers: expect.objectContaining({
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer zai-key',
+        }),
+      }),
+    );
+    expect(getRequestPayload(fetchImpl)).toEqual({
+      model: 'glm-5-turbo',
+      temperature: 0.1,
+      messages: [{ role: 'user', content: 'extract recipe' }],
+      response_format: { type: 'json_object' },
+    });
   });
 
   it('retries once on a 429 response', async () => {
@@ -86,6 +109,12 @@ describe('generateText', () => {
 
     expect(fetchImpl).toHaveBeenCalledTimes(2);
     expect(result.attempt).toBe(2);
+    expect(getRequestPayload(fetchImpl, 0)).toMatchObject({
+      response_format: { type: 'json_object' },
+    });
+    expect(getRequestPayload(fetchImpl, 1)).toMatchObject({
+      response_format: { type: 'json_object' },
+    });
   });
 
   it('fails when the api key is missing', async () => {
