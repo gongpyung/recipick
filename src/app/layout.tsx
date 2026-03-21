@@ -22,6 +22,18 @@ export const metadata: Metadata = {
   title: '레시픽 - 당신이 본 요리 영상, 스마트하게 픽하다',
   description:
     'YouTube 링크만 입력하면 AI가 자동으로 레시피를 추출해드립니다. 재료, 조리 순서, 팁까지 깔끔하게.',
+  openGraph: {
+    title: '레시픽 (Recipick)',
+    description: '당신이 본 요리 영상, 스마트하게 픽하다',
+    siteName: '레시픽',
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: '레시픽 (Recipick)',
+    description: '당신이 본 요리 영상, 스마트하게 픽하다',
+  },
 };
 
 export const viewport: Viewport = {
