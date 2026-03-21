@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import { Header } from '@/components/header';
 import './globals.css';
 
 const geistSans = Geist({
@@ -16,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'YouTube Recipe AI',
   description:
-    'YouTube 영상과 쇼츠에서 레시피 구조화를 준비하는 추출 파이프라인',
+    '유튜브 영상과 쇼츠에서 레시피를 추출하고 인분 수에 맞게 조절하는 앱',
 };
 
 export default function RootLayout({
@@ -29,7 +30,10 @@ export default function RootLayout({
       lang="ko"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col bg-muted/30">
+        <Header />
+        {children}
+      </body>
     </html>
   );
 }

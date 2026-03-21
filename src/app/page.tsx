@@ -1,58 +1,39 @@
-import Link from 'next/link';
+import { RecentRecipes } from '@/components/recent-recipes';
+import { UrlInputForm } from '@/components/url-input-form';
 
-import { Button } from '@/components/ui/button';
+export const dynamic = 'force-dynamic';
 
 export default function Home() {
   return (
-    <main className="bg-muted/30 flex flex-1 items-center justify-center px-6 py-24">
-      <section className="bg-background w-full max-w-4xl rounded-3xl border p-10 shadow-sm">
-        <div className="space-y-6">
-          <span className="bg-primary/10 text-primary inline-flex rounded-full px-4 py-1 text-sm font-medium">
-            Step 1 · Foundation + Data Pipeline
-          </span>
-          <div className="space-y-4">
-            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-              YouTube Recipe AI
+    <main className="flex-1 px-5 py-10 md:py-16">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-14">
+        <section className="mx-auto w-full max-w-xl space-y-8 text-center">
+          <div className="space-y-3">
+            <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
+              유튜브 영상에서
+              <br />
+              <span className="text-primary">레시피를 추출</span>해 드려요
             </h1>
-            <p className="text-muted-foreground max-w-2xl text-lg leading-8">
-              유튜브 일반 영상과 쇼츠 URL을 입력하면 레시피 구조화를 위한 데이터
-              파이프라인을 준비하는 MVP입니다. 현재는 URL 파싱, 메타데이터/자막
-              수집, 저장 레이어까지 구현하는 Step 1을 진행 중입니다.
+            <p className="mx-auto max-w-md text-muted-foreground">
+              YouTube 링크를 붙여넣으면 자막과 설명을 분석해서
+              재료, 조리 단계, 팁을 구조화된 레시피로 만들어 드립니다.
             </p>
           </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {[
-              'YouTube URL 검증과 videoId 파싱',
-              '메타데이터·자막 수집 및 텍스트 정리',
-              'Supabase 저장과 extraction 상태 추적',
-            ].map((item) => (
-              <div
-                key={item}
-                className="bg-card text-card-foreground rounded-2xl border px-5 py-4 text-sm"
-              >
-                {item}
-              </div>
-            ))}
+          <UrlInputForm />
+        </section>
+
+        <section className="space-y-5" id="recent">
+          <div className="space-y-1">
+            <h2 className="text-xl font-semibold tracking-tight">
+              최근 추출한 레시피
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              최근에 만든 레시피를 바로 확인할 수 있어요.
+            </p>
           </div>
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              nativeButton={false}
-              render={<Link href="/api/extractions" />}
-            >
-              API 준비 상태 보기
-            </Button>
-            <Button
-              nativeButton={false}
-              render={
-                <a href="https://nextjs.org/docs/app/api-reference/file-conventions/route" />
-              }
-              variant="outline"
-            >
-              Next.js Route Handlers
-            </Button>
-          </div>
-        </div>
-      </section>
+          <RecentRecipes />
+        </section>
+      </div>
     </main>
   );
 }

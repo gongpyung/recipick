@@ -25,12 +25,16 @@ import type {
 export interface RecipeDetails {
   id: string;
   title: string;
+  summary: string | null;
   baseServings: number | null;
   ingredients: RecipeIngredient[];
   steps: RecipeStep[];
   tips: string[];
   warnings: RecipeWarning[];
   confidence: RecipeConfidence;
+  youtubeUrl: string | null;
+  thumbnailUrl: string | null;
+  updatedAt: string;
 }
 
 export interface RecentRecipeListItem {
@@ -104,7 +108,7 @@ interface VideosTableClient {
   select(columns: string): {
     eq(column: 'id', value: string): {
       maybeSingle(): Promise<{
-        data: Pick<VideoRow, 'id' | 'thumbnail_url'> | null;
+        data: Pick<VideoRow, 'id' | 'thumbnail_url' | 'youtube_url'> | null;
         error: PostgrestError | null;
       }>;
     };
@@ -286,13 +290,23 @@ export async function getRecipe(recipeId: string): Promise<RecipeDetails | null>
   assertNoSupabaseError(stepsResult.error);
   assertNoSupabaseError(warningsResult.error);
 
+  const videoResult = await supabase
+    .from('videos')
+    .select('id, thumbnail_url, youtube_url')
+    .eq('id', recipe.video_id)
+    .maybeSingle();
+
+  assertNoSupabaseError(videoResult.error);
+
   const ingredients = ingredientsResult.data ?? [];
   const steps = stepsResult.data ?? [];
   const warnings = warningsResult.data ?? [];
+  const video = videoResult.data;
 
   return {
     id: recipe.id,
     title: recipe.title,
+    summary: recipe.summary,
     baseServings: recipe.base_servings,
     ingredients: ingredients.map((ingredient) => ({
       name: ingredient.name,
@@ -316,6 +330,9 @@ export async function getRecipe(recipeId: string): Promise<RecipeDetails | null>
       severity: warning.severity,
     })),
     confidence: recipe.confidence,
+    youtubeUrl: video?.youtube_url ?? null,
+    thumbnailUrl: video?.thumbnail_url ?? null,
+    updatedAt: recipe.updated_at,
   };
 }
 

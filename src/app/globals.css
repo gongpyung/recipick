@@ -49,30 +49,30 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: oklch(0.985 0.005 75);
+  --foreground: oklch(0.18 0.02 50);
+  --card: oklch(0.995 0.003 75);
+  --card-foreground: oklch(0.18 0.02 50);
+  --popover: oklch(0.995 0.003 75);
+  --popover-foreground: oklch(0.18 0.02 50);
+  --primary: oklch(0.55 0.14 45);
+  --primary-foreground: oklch(0.99 0.005 75);
+  --secondary: oklch(0.95 0.015 75);
+  --secondary-foreground: oklch(0.25 0.03 50);
+  --muted: oklch(0.95 0.01 75);
+  --muted-foreground: oklch(0.5 0.02 50);
+  --accent: oklch(0.92 0.03 75);
+  --accent-foreground: oklch(0.25 0.03 50);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
+  --border: oklch(0.9 0.02 75);
+  --input: oklch(0.9 0.02 75);
+  --ring: oklch(0.55 0.14 45);
+  --chart-1: oklch(0.65 0.15 45);
+  --chart-2: oklch(0.7 0.1 90);
+  --chart-3: oklch(0.6 0.12 150);
+  --chart-4: oklch(0.55 0.08 30);
+  --chart-5: oklch(0.75 0.08 60);
+  --radius: 0.75rem;
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
   --sidebar-primary: oklch(0.205 0 0);
@@ -126,5 +126,23 @@
   }
   html {
     @apply font-sans;
+  }
+}
+
+@media print {
+  .no-print,
+  header,
+  nav,
+  button,
+  [data-slot="button"] {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print-full {
+    max-width: 100% !important;
+    padding: 0 !important;
   }
 }
