@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { ClipboardPaste, LoaderCircle, Utensils } from 'lucide-react';
+import { ClipboardPaste, LoaderCircle, Sparkles, Youtube } from 'lucide-react';
 
 import { createExtraction } from '@/lib/api/client';
 import { parseYouTubeUrl } from '@/lib/youtube/url-parser';
@@ -16,39 +16,29 @@ export function UrlInputForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [clipboardValue, setClipboardValue] = useState<string | null>(null);
 
-  const helperText = useMemo(
-    () => 'youtube.com · youtu.be · YouTube Shorts 링크를 지원합니다',
-    [],
-  );
+  const helperText = '요리 영상, 먹방, 레시피 영상 모두 OK!';
 
   async function handleClipboardSuggestion() {
-    if (!navigator.clipboard || !window.isSecureContext) {
-      return;
-    }
-
+    if (!navigator.clipboard || !window.isSecureContext) return;
     try {
       const text = await navigator.clipboard.readText();
       if (parseYouTubeUrl(text).isValid && text !== value) {
         setClipboardValue(text);
       }
     } catch {
-      // clipboard read not available
+      /* clipboard not available */
     }
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-
     const parseResult = parseYouTubeUrl(value);
-
     if (!parseResult.isValid) {
       setError(parseResult.error ?? '유효한 YouTube URL을 입력해 주세요.');
       return;
     }
-
     setIsSubmitting(true);
-
     try {
       const result = await createExtraction(value);
       router.push(`/extractions/${result.extractionId}`);
@@ -64,20 +54,29 @@ export function UrlInputForm() {
   }
 
   return (
-    <div className="rounded-2xl border bg-card p-6 shadow-sm md:p-8">
-      <form className="space-y-5" onSubmit={handleSubmit}>
-        <div className="space-y-2.5">
-          <label
-            className="text-sm font-medium text-foreground"
-            htmlFor="youtube-url"
-          >
-            YouTube 링크
-          </label>
+    <div className="relative">
+      {/* Decorative layered cards behind */}
+      <div className="absolute -top-2 left-2 right-2 h-full bg-[#ffe0b2]/60 rounded-3xl transform rotate-1" />
+      <div className="absolute -top-1 left-1 right-1 h-full bg-[#c8e6c9]/60 rounded-3xl transform -rotate-1" />
+
+      {/* Main card */}
+      <div className="relative bg-white rounded-3xl p-5 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
+        {/* Card title */}
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-8 h-8 bg-[#ffcdd2] rounded-xl flex items-center justify-center">
+            <Youtube className="w-4 h-4 text-[#e53935]" />
+          </div>
+          <div>
+            <h2 className="text-base font-semibold text-[#4a4a4a]">영상에서 레시피 추출</h2>
+            <p className="text-xs text-[#8b7b7b]">YouTube 링크를 붙여넣으세요</p>
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-3">
           <div className="relative">
             <Input
-              id="youtube-url"
               type="url"
-              placeholder="https://www.youtube.com/watch?v=..."
+              placeholder="https://youtube.com/watch?v=..."
               value={value}
               onChange={(event) => {
                 setValue(event.target.value);
@@ -86,51 +85,53 @@ export function UrlInputForm() {
               onFocus={handleClipboardSuggestion}
               autoComplete="off"
               inputMode="url"
-              className="h-12 text-base pr-4 pl-4"
+              className="w-full px-4 py-3 bg-[#fef7f9] border border-[#f8bbd9]/50 rounded-2xl text-sm text-[#4a4a4a] placeholder:text-[#c8b8b8] focus:outline-none focus:ring-2 focus:ring-[#e8a4b8]/50 focus:border-transparent transition-all h-12"
             />
           </div>
-          <p className="text-xs text-muted-foreground">{helperText}</p>
-        </div>
 
-        {clipboardValue ? (
-          <button
-            className="inline-flex items-center gap-2 rounded-lg bg-accent px-3 py-2 text-sm text-accent-foreground transition-colors hover:bg-accent/80"
-            type="button"
-            onClick={() => {
-              setValue(clipboardValue);
-              setClipboardValue(null);
-            }}
+          {/* Extract button */}
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="w-full py-3.5 h-12 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white font-medium rounded-2xl shadow-lg shadow-[#f8bbd9]/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-[#f8bbd9]/40 transition-all active:scale-[0.98] border-0 cursor-pointer"
           >
-            <ClipboardPaste className="size-4 text-primary" />
-            클립보드의 YouTube 링크 붙여넣기
-          </button>
-        ) : null}
+            {isSubmitting ? (
+              <>
+                <LoaderCircle className="size-4 animate-spin" />
+                <span>레시피 추출 중...</span>
+              </>
+            ) : (
+              <>
+                <Sparkles className="size-4" />
+                <span>레시피 픽하기</span>
+              </>
+            )}
+          </Button>
 
-        {error ? (
-          <div className="rounded-lg bg-destructive/10 px-3 py-2.5 text-sm text-destructive">
-            {error}
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1">
+            <p className="font-body text-xs text-[#8b7b7b]">{helperText}</p>
+            {clipboardValue ? (
+              <button
+                className="font-body inline-flex items-center gap-1.5 text-xs font-semibold text-[#e8a4b8] transition-colors hover:text-[#ad1457] cursor-pointer"
+                type="button"
+                onClick={() => {
+                  setValue(clipboardValue);
+                  setClipboardValue(null);
+                }}
+              >
+                <ClipboardPaste className="size-3" />
+                클립보드에서 붙여넣기
+              </button>
+            ) : null}
           </div>
-        ) : null}
 
-        <Button
-          className="h-12 w-full text-base font-semibold"
-          disabled={isSubmitting}
-          type="submit"
-          size="lg"
-        >
-          {isSubmitting ? (
-            <>
-              <LoaderCircle className="size-5 animate-spin" />
-              추출 중...
-            </>
-          ) : (
-            <>
-              <Utensils className="size-5" />
-              레시피 추출하기
-            </>
-          )}
-        </Button>
-      </form>
+          {error ? (
+            <div className="font-body rounded-xl bg-[#ffcdd2]/30 px-4 py-3 text-sm font-medium text-[#c62828]">
+              {error}
+            </div>
+          ) : null}
+        </form>
+      </div>
     </div>
   );
 }

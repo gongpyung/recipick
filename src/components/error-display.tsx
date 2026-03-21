@@ -64,24 +64,32 @@ export function ErrorDisplay({
   };
 
   return (
-    <div className="mx-auto max-w-md space-y-6 text-center">
-      <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-destructive/10">
-        <AlertTriangle className="size-7 text-destructive" />
+    <div className="mx-auto max-w-sm space-y-8 py-12 text-center">
+      <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-[#ffcdd2]/30">
+        <AlertTriangle className="size-9 text-[#e53935]" />
       </div>
-      <div className="space-y-2">
-        <h2 className="text-lg font-semibold">{copy.title}</h2>
-        <p className="text-sm text-muted-foreground">
+      <div className="space-y-3">
+        <h2 className="font-display text-xl text-[#4a4a4a]">{copy.title}</h2>
+        <p className="font-body text-sm leading-relaxed text-[#8b7b7b]">
           {message ?? copy.description}
         </p>
       </div>
       <div className="flex flex-wrap items-center justify-center gap-3">
         {copy.retryable && onRetry ? (
-          <Button onClick={onRetry} variant="outline">
+          <Button
+            onClick={onRetry}
+            variant="outline"
+            className="cursor-pointer border-[#f8bbd9] text-[#6b5b4f] hover:bg-[#fef7f9]"
+          >
             <RotateCcw className="size-4" />
             {retryLabel}
           </Button>
         ) : null}
-        <Button nativeButton={false} render={<Link href="/" />}>
+        <Button
+          nativeButton={false}
+          render={<Link href="/" />}
+          className="cursor-pointer bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white border-0 shadow-lg shadow-[#f8bbd9]/30"
+        >
           <Home className="size-4" />
           홈으로 돌아가기
         </Button>

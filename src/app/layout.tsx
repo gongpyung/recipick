@@ -1,23 +1,34 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import type { Metadata, Viewport } from 'next';
+import { Gowun_Batang, Jua } from 'next/font/google';
 
 import { Header } from '@/components/header';
 import './globals.css';
 
-const geistSans = Geist({
-  variable: '--font-geist-sans',
+const gowunBatang = Gowun_Batang({
+  weight: ['400', '700'],
   subsets: ['latin'],
+  variable: '--font-gowun',
+  display: 'swap',
 });
 
-const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
+const jua = Jua({
+  weight: ['400'],
   subsets: ['latin'],
+  variable: '--font-jua',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'YouTube Recipe AI',
+  title: '레시픽 - 당신이 본 요리 영상, 스마트하게 픽하다',
   description:
-    '유튜브 영상과 쇼츠에서 레시피를 추출하고 인분 수에 맞게 조절하는 앱',
+    'YouTube 링크만 입력하면 AI가 자동으로 레시피를 추출해드립니다. 재료, 조리 순서, 팁까지 깔끔하게.',
+};
+
+export const viewport: Viewport = {
+  themeColor: '#fce4ec',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -28,9 +39,9 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${gowunBatang.variable} ${jua.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-muted/30">
+      <body className="flex min-h-full flex-col bg-background font-body text-foreground">
         <Header />
         {children}
       </body>

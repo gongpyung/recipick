@@ -2,22 +2,27 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function Loading() {
   return (
-    <main className="flex-1 px-5 py-10">
-      <div className="mx-auto w-full max-w-5xl space-y-6">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-4 w-72" />
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="overflow-hidden rounded-xl border bg-card">
-              <Skeleton className="aspect-video w-full" />
-              <div className="space-y-2 p-4">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-3 w-1/3" />
-              </div>
-            </div>
-          ))}
+    <main className="flex-1 pb-24">
+      <section className="hero-bg border-b border-[#f8bbd9]/20 px-6 pb-16 pt-14">
+        <div className="mx-auto max-w-2xl space-y-8 text-center">
+          <Skeleton className="mx-auto h-12 w-2/3 rounded-xl" />
+          <Skeleton className="mx-auto h-6 w-1/2 rounded-lg" />
+          <Skeleton className="mx-auto h-14 w-full max-w-lg rounded-3xl" />
         </div>
-      </div>
+      </section>
+
+      <section className="px-6 py-14">
+        <div className="mx-auto max-w-6xl space-y-8">
+          <Skeleton className="h-8 w-48 rounded-lg" />
+          <div className="rounded-3xl border border-[#f8bbd9]/30 bg-white p-4 shadow-xl shadow-[#f8bbd9]/20">
+            <div className="space-y-3">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </main>
   );
 }
