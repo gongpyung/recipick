@@ -4,70 +4,118 @@
 ```
 ✅ npm run lint
 ✅ npm run type-check
-✅ npm test       → 12 files passed, 43 tests passed, 1 skipped
+✅ npm test       → 12 files passed, 43 passed, 1 skipped
 ✅ npm run build
 ```
 
-## 구현 현황
+## 요약
+Step 2 AI extraction engine의 핵심 구성요소는 코드상 구현되었고, 로컬 자동 검증도 모두 통과했다.  
+다만 **실제 Supabase + Z.ai 자격증명 기반 smoke test는 아직 수행되지 않았고**, 일부 Supabase query typing이 수동 subset/cast에 의존하므로 최종 판정은 `⚠️ CONDITIONAL`이다.
 
-### 1) LLM / Parser / Schema / Normalizer
-- [x] `src/lib/llm/client.ts` — Z.ai chat completion client + transport retry
-- [x] `src/lib/llm/json-parser.ts` — LLM payload text 추출 / JSON block 파싱
-- [x] `src/lib/extraction/prompts.ts` — extraction / repair prompt
-- [x] `src/lib/extraction/extractor.ts` — extraction orchestration + schema retry
-- [x] `src/lib/extraction/parser.ts` — 구조화 JSON 파싱 보조
-- [x] `src/lib/extraction/recipe-schema.ts` — Zod recipe schema
-- [x] `src/lib/extraction/normalizer.ts` — nullable normalization / warning dedupe / step ordering
-- [x] `src/lib/extraction/unit-map.ts` — 단위 alias 정규화
+---
 
-### 2) Service Orchestration
-- [x] `service.ts`가 `fetching_metadata → fetching_captions → structuring → normalizing → saving → completed` 흐름을 수행
-- [x] `PIPELINE_TIMEOUT_MS` 확장 (`90000`)
-- [x] source text 부족 시 `INSUFFICIENT_SOURCE_TEXT` 처리
-- [x] LLM/정규화/저장 디버그 정보 `raw_output_json`에 기록
-- [x] completed extraction 반환 경로 구현
+## 1. Retry / LLM 계층 ✅
 
-### 3) DB / API
-- [x] `002_recipe_tables.sql` — recipes / ingredients / steps / warnings
-- [x] `src/lib/supabase/types.ts` — Step 2 table types
-- [x] `src/lib/recipe/service.ts` — recipe aggregate 조회 + 저장
-- [x] `GET /api/extractions/:id` — completed 시 `recipeId` 반환
-- [x] `GET /api/recipes/:id` — recipe aggregate 조회
+- [x] `src/lib/llm/client.ts`
+  - Z.ai `/chat/completions` 호출
+  - 429 / timeout / retryable transport 재시도
+  - 응답 텍스트 추출
+- [x] `src/lib/llm/json-parser.ts`
+  - payload text 추출
+  - fenced JSON / balanced JSON 파싱
+- [x] `src/lib/extraction/schema-retry.ts`
+  - schema retry 전용 래퍼
+  - `SchemaRetryableError` 지원
+- [x] `__tests__/lib/llm/client.test.ts`
+- [x] `__tests__/lib/extraction/schema-retry.test.ts`
 
-### 4) Retry 정책
-- [x] transport retry: `src/lib/llm/client.ts`
-- [x] schema retry: `src/lib/extraction/schema-retry.ts`
-- [x] parser failure를 retryable issue로 승격
-- [x] repair prompt에 이전 output + validation issues 포함
+## 2. Extraction / Schema / Normalization ✅
 
-## 테스트 범위
-- `__tests__/lib/llm/client.test.ts`
-- `__tests__/lib/extraction/extractor.test.ts`
-- `__tests__/lib/extraction/parser.test.ts`
-- `__tests__/lib/extraction/recipe-schema.test.ts`
-- `__tests__/lib/extraction/normalizer.test.ts`
-- 기존 Step 1 테스트 전체 유지
+- [x] `src/lib/extraction/prompts.ts`
+  - extraction prompt / repair prompt
+- [x] `src/lib/extraction/parser.ts`
+  - 모델 출력 JSON 파싱
+- [x] `src/lib/extraction/recipe-schema.ts`
+  - structured recipe Zod schema
+- [x] `src/lib/extraction/normalizer.ts`
+  - step ordering / null normalization / warning dedupe
+- [x] `src/lib/extraction/unit-map.ts`
+  - 단위 alias 정규화
+- [x] `src/lib/extraction/extractor.ts`
+  - model call → parse → schema retry → normalize
+- [x] 관련 단위 테스트
+  - `extractor.test.ts`
+  - `parser.test.ts`
+  - `recipe-schema.test.ts`
+  - `normalizer.test.ts`
 
-## 남은 리스크 / 제한
-1. **실서비스 smoke 미실행**
-   - 현재 로컬 환경에서 `NEXT_PUBLIC_SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`가 없고
-   - `ZAI_MODEL`도 로컬 런타임 기준 비어 있어
-   - 실제 Z.ai + Supabase end-to-end smoke test는 아직 미실행
-2. **타입 안전성 우회**
-   - `service.ts`의 `as unknown as SupabaseSubset` 패턴은 여전히 존재
-   - 동작은 하지만 장기적으로는 generated types / query helper 정비가 필요
-3. **비동기 job 계약**
-   - 현재 구현은 extraction route 내부에서 파이프라인을 수행하므로
-   - 문서상 “job/extraction 기반 비동기 API”와 완전히 일치한다고 보긴 어렵다
+## 3. Service Orchestration ✅
 
-## 최종 판정
+- [x] `src/lib/extraction/service.ts`
+  - `fetching_metadata`
+  - `fetching_captions`
+  - `structuring`
+  - `normalizing`
+  - `saving`
+  - `completed`
+- [x] `PIPELINE_TIMEOUT_MS = 90000`
+- [x] source text 부족 시 `INSUFFICIENT_SOURCE_TEXT`
+- [x] recipe 판별 실패 시 `NON_RECIPE_VIDEO`
+- [x] raw/model/timing debug payload 저장
+- [x] `POST /api/extractions`는 extraction row를 만들고 queued 응답을 반환한 뒤 파이프라인을 비동기적으로 진행
+
+### 주의
+- 현재 비동기 실행은 route 내부 background dispatch(`setTimeout`) 방식이다.
+- 문서상 “job/extraction 기반 async API”에 더 가까워졌지만, 전용 worker/job queue 만큼 견고하지는 않다.
+
+## 4. DB / Recipe Persistence ✅
+
+- [x] `supabase/migrations/002_recipe_tables.sql`
+  - `recipes`
+  - `ingredients`
+  - `steps`
+  - `warnings`
+- [x] `src/lib/supabase/types.ts`
+  - Step 2 tables typed
+- [x] `src/lib/recipe/service.ts`
+  - `saveRecipeAggregate`
+  - `getRecipe`
+  - `getRecipeIdByExtractionId`
+  - `listRecentRecipes`
+  - `updateRecipeAggregate`
+
+### 저장 안정성
+- [x] child insert 실패 시 recipe row rollback 수행
+- [ ] DB transaction/RPC 기반의 완전한 atomic save는 아직 아님
+
+## 5. API Contract 정합성 ✅/⚠️
+
+### 구현됨
+- [x] `POST /api/extractions`
+- [x] `GET /api/extractions/:id`
+- [x] `GET /api/recipes/:id`
+- [x] `PATCH /api/recipes/:id`
+- [x] `GET /api/recipes?scope=recent`
+
+### 계약상 여전히 남는 리스크
+- [ ] extraction 실행이 durable background worker가 아니라 route-triggered background dispatch에 의존
+
+## 6. 최종 판정
+
 ### ⚠️ CONDITIONAL
 
-코드 기준 Step 2 핵심 AI extraction engine 구성요소는 구현되었고, 로컬 자동 검증도 모두 통과했다.  
-다만 **실제 Z.ai + Supabase 자격증명 기반 smoke test 부재**와 **완전한 비동기 job 계약 미정리** 때문에 최종 PASS 대신 CONDITIONAL로 판정한다.
+조건부 통과 사유:
+1. **실환경 smoke 미실행**
+   - 현재 `.env.local` 없음
+   - 실제 `NEXT_PUBLIC_SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` 로컬 런타임 smoke 미실행
+   - `ZAI_MODEL` 실환경 smoke 미실행
+2. **Supabase 타입 우회**
+   - extraction / recipe service 일부가 manual subset/cast에 의존
+3. **background dispatch 한계**
+   - 현재 async contract는 흉내가 아니라 실제 queued 응답으로 동작하지만, durable queue 수준은 아님
 
 ## 다음 권장 작업
-1. `.env.local`에 실제 Supabase / Z.ai 값 세팅
-2. 실제 YouTube URL로 `POST /api/extractions` smoke 실행
-3. completed extraction → `GET /api/extractions/:id` → `GET /api/recipes/:id` E2E 확인
-4. 필요 시 extraction 실행을 background job/polling 구조로 분리
+1. `.env.local` 구성
+2. 실제 YouTube URL로 `POST /api/extractions` smoke test
+3. polling → completed → `recipeId` → `GET /api/recipes/:id` E2E 검증
+4. 필요 시 extraction 실행을 durable worker / queue 구조로 분리

@@ -17,7 +17,7 @@ import type {
   StructuredRecipe,
 } from '@/lib/extraction/types'
 import { LlmClientError } from '@/lib/llm/client'
-import { saveRecipeAggregate } from '@/lib/recipe/service'
+import { getRecipeIdByExtractionId, saveRecipeAggregate } from '@/lib/recipe/service'
 import { getSupabaseServerClient } from '@/lib/supabase/client'
 import type {
   ExtractionInsert,
@@ -288,15 +288,28 @@ function mapUpstreamError(error: unknown) {
   return new ExtractionServiceError(ExtractionErrorCode.INTERNAL_ERROR)
 }
 
-function selectReusableExtraction(extractions: ExtractionRow[]) {
-  return (
-    extractions.find((extraction) => isActiveStatus(extraction.status)) ??
-    extractions.find(
-      (extraction) =>
-        extraction.status === 'completed' && isFresh(extraction.updated_at),
-    ) ??
-    null
+async function selectReusableExtraction(extractions: ExtractionRow[]) {
+  const activeExtraction = extractions.find((extraction) =>
+    isActiveStatus(extraction.status),
   )
+
+  if (activeExtraction) {
+    return activeExtraction
+  }
+
+  for (const extraction of extractions) {
+    if (extraction.status !== 'completed' || !isFresh(extraction.updated_at)) {
+      continue
+    }
+
+    const recipeId = await getRecipeIdByExtractionId(extraction.id)
+
+    if (recipeId) {
+      return extraction
+    }
+  }
+
+  return null
 }
 
 async function updateExtractionRecord(
@@ -400,41 +413,14 @@ function ensureRecipeVideo(recipe: StructuredRecipe) {
   }
 }
 
-export async function createExtraction(
-  youtubeUrl: string,
-  options?: { forceReExtract?: boolean },
-) {
-  const parsed = parseYouTubeUrl(youtubeUrl)
-  const videoId = parsed.videoId
-  const sourceType = parsed.sourceType
-
-  if (!parsed.isValid || !videoId || !sourceType) {
-    throw new ExtractionServiceError(mapUrlErrorToCode(parsed.error), parsed.error)
-  }
-
-  const existingVideo = await fetchExistingVideo(videoId)
-
-  if (existingVideo && !options?.forceReExtract) {
-    const reusableExtraction = selectReusableExtraction(
-      await fetchRecentExtractions(existingVideo.id),
-    )
-
-    if (reusableExtraction) {
-      return {
-        extractionId: reusableExtraction.id,
-        status: reusableExtraction.status,
-        stage: reusableExtraction.stage,
-        cached: true,
-      }
-    }
-  }
-
-  const video = await upsertVideo({
-    youtube_url: youtubeUrl,
-    youtube_id: videoId,
-    source_type: sourceType,
-  })
-  const extraction = await createQueuedExtraction(video.id)
+async function processExtractionPipeline(input: {
+  extraction: ExtractionRow
+  video: VideoRow
+  youtubeUrl: string
+  videoId: string
+  sourceType: VideoInsert['source_type']
+}) {
+  const { extraction, sourceType, video, videoId, youtubeUrl } = input
   const stageDurations: Partial<Record<ExtractionStage, number>> = {}
   const pipeline = createPipelineController(PIPELINE_TIMEOUT_MS)
   const fetchImpl = abortableFetch(pipeline.signal)
@@ -597,13 +583,6 @@ export async function createExtraction(
       error_code: null,
       error_message: null,
     })
-
-    return {
-      extractionId: extraction.id,
-      status: 'completed' as const,
-      stage: null,
-      cached: false,
-    }
   } catch (error) {
     const mappedError = mapUpstreamError(error)
 
@@ -621,10 +600,67 @@ export async function createExtraction(
       error_code: mappedError.code,
       error_message: mappedError.message,
     })
-
-    throw mappedError
   } finally {
     pipeline.cleanup()
+  }
+}
+
+export async function createExtraction(
+  youtubeUrl: string,
+  options?: { forceReExtract?: boolean },
+) {
+  const parsed = parseYouTubeUrl(youtubeUrl)
+  const videoId = parsed.videoId
+  const sourceType = parsed.sourceType
+
+  if (!parsed.isValid || !videoId || !sourceType) {
+    throw new ExtractionServiceError(mapUrlErrorToCode(parsed.error), parsed.error)
+  }
+
+  const existingVideo = await fetchExistingVideo(videoId)
+
+  if (existingVideo && !options?.forceReExtract) {
+    const reusableExtraction = await selectReusableExtraction(
+      await fetchRecentExtractions(existingVideo.id),
+    )
+
+    if (reusableExtraction) {
+      const recipeId =
+        reusableExtraction.status === 'completed'
+          ? await getRecipeIdByExtractionId(reusableExtraction.id)
+          : null
+
+      return {
+        extractionId: reusableExtraction.id,
+        status: reusableExtraction.status,
+        stage: reusableExtraction.stage,
+        recipeId: recipeId ?? undefined,
+        cached: true,
+      }
+    }
+  }
+
+  const video = await upsertVideo({
+    youtube_url: youtubeUrl,
+    youtube_id: videoId,
+    source_type: sourceType,
+  })
+  const extraction = await createQueuedExtraction(video.id)
+  setTimeout(() => {
+    void processExtractionPipeline({
+      extraction,
+      video,
+      youtubeUrl,
+      videoId,
+      sourceType,
+    })
+  }, 0)
+
+  return {
+    extractionId: extraction.id,
+    status: 'queued' as const,
+    stage: 'validating_url' as const,
+    cached: false,
   }
 }
 
