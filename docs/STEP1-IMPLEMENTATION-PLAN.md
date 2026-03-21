@@ -361,7 +361,7 @@ File: `.github/workflows/ci.yml`
 ## Folder Structure (Final)
 
 ```
-youtube-recipe-ai/
+recipick/
 ├── .env.example
 ├── .env.local                    (gitignored)
 ├── .github/workflows/ci.yml

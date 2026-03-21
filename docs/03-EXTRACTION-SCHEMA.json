@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://youtube-recipe-ai.local/schemas/recipe-extraction.json",
+  "$id": "https://recipick.local/schemas/recipe-extraction.json",
   "title": "RecipeExtraction",
   "type": "object",
   "additionalProperties": false,

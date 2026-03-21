@@ -365,9 +365,6 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                       <SeverityIcon severity={warning.severity} />
                       <div>
                         <p className="font-body text-sm font-medium text-[#4a4a4a]">{warning.message}</p>
-                        <p className="font-body mt-0.5 text-[10px] text-[#8b7b7b]">
-                          {warning.code}
-                        </p>
                       </div>
                     </div>
                   ))}
