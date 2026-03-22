@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import useSWR from 'swr';
 import {
@@ -23,10 +24,26 @@ import { getRecipe } from '@/lib/api/client';
 import { scaleIngredient } from '@/lib/recipe/scaling';
 import type { RecipeConfidence, WarningSeverity } from '@/lib/extraction/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { cn } from '@/lib/utils';
+import { cn, extractErrorCode } from '@/lib/utils';
 import { ErrorDisplay } from '@/components/error-display';
-import { RecipeEditForm } from '@/components/recipe-edit-form';
 import { ServingControl } from '@/components/serving-control';
+
+const RecipeEditForm = dynamic(
+  () =>
+    import('@/components/recipe-edit-form').then(
+      (module) => module.RecipeEditForm,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="space-y-4">
+        <Skeleton className="h-10 w-40 rounded-xl" />
+        <Skeleton className="h-52 w-full rounded-3xl" />
+        <Skeleton className="h-64 w-full rounded-3xl" />
+      </div>
+    ),
+  },
+);
 
 function ConfidenceBadge({ confidence }: { confidence: RecipeConfidence }) {
   if (confidence === 'high') return null;
@@ -89,7 +106,7 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
   if (error || !data) {
     return (
       <ErrorDisplay
-        code={error && 'code' in error ? String(error.code) : 'INTERNAL_ERROR'}
+        code={extractErrorCode(error)}
         message={error instanceof Error ? error.message : undefined}
         onRetry={() => void mutate()}
       />

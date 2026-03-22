@@ -1,13 +1,59 @@
+'use client';
+
 import Link from 'next/link';
+import useSWR from 'swr';
 import { Clock, Heart } from 'lucide-react';
 
-import { listRecentRecipes } from '@/lib/recipe/service';
-import { formatDate, CARD_COLORS } from '@/lib/utils';
+import { getRecentRecipes } from '@/lib/api/client';
+import { ErrorDisplay } from '@/components/error-display';
+import { Skeleton } from '@/components/ui/skeleton';
+import { formatDate, CARD_COLORS, extractErrorCode } from '@/lib/utils';
 
 const RECIPE_ICONS = ['🍲', '🍝', '🍛', '🍰', '🥗'];
+const RECENT_RECIPES_LIMIT = 5;
 
-export async function RecentRecipes() {
-  const items = (await listRecentRecipes()).slice(0, 5);
+export function RecentRecipes() {
+  const { data, error, isLoading, mutate } = useSWR(
+    ['recent-recipes', RECENT_RECIPES_LIMIT],
+    () => getRecentRecipes(RECENT_RECIPES_LIMIT),
+  );
+
+  if (isLoading) {
+    return (
+      <div className="relative">
+        <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#e1bee7]/40" />
+        <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-4 shadow-xl shadow-[#f8bbd9]/20">
+          <div className="space-y-3">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-3 rounded-2xl bg-[#fef7f9] p-3"
+              >
+                <Skeleton className="h-12 w-12 rounded-2xl" />
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton className="h-4 w-2/3 rounded-md" />
+                  <Skeleton className="h-3 w-1/3 rounded-md" />
+                </div>
+                <Skeleton className="h-8 w-8 rounded-full" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <ErrorDisplay
+        code={extractErrorCode(error)}
+        message={error instanceof Error ? error.message : undefined}
+        onRetry={() => void mutate()}
+      />
+    );
+  }
+
+  const items = data?.items ?? [];
 
   if (items.length === 0) {
     return (
@@ -32,11 +78,9 @@ export async function RecentRecipes() {
 
   return (
     <div className="relative">
-      {/* Decorative card behind */}
       <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#e1bee7]/40" />
 
       <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-4 shadow-xl shadow-[#f8bbd9]/20">
-        {/* Recipe list */}
         <div className="space-y-3">
           {items.map((item, index) => (
             <Link
@@ -44,7 +88,6 @@ export async function RecentRecipes() {
               key={item.id}
               className="group flex cursor-pointer items-center gap-3 rounded-2xl bg-[#fef7f9] p-3 transition-all hover:bg-[#fce4ec]/50"
             >
-              {/* Icon */}
               <div
                 className={`h-12 w-12 ${CARD_COLORS[index % CARD_COLORS.length]} flex items-center justify-center rounded-2xl text-2xl shadow-sm transition-transform group-hover:scale-105`}
               >
@@ -61,7 +104,6 @@ export async function RecentRecipes() {
                 )}
               </div>
 
-              {/* Info */}
               <div className="min-w-0 flex-1">
                 <h4 className="truncate text-sm font-medium text-[#4a4a4a]">
                   {item.title}
@@ -74,7 +116,6 @@ export async function RecentRecipes() {
                 </div>
               </div>
 
-              {/* Heart icon */}
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#fef7f9] text-[#c8b8b8]">
                 <Heart className="h-4 w-4" />
               </div>

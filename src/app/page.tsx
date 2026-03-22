@@ -4,8 +4,6 @@ import { RecentRecipes } from '@/components/recent-recipes';
 import { UrlInputForm } from '@/components/url-input-form';
 import { BottomNav } from '@/components/bottom-nav';
 
-export const dynamic = 'force-dynamic';
-
 const FEATURES = [
   {
     icon: Utensils,

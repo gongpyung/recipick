@@ -102,11 +102,17 @@ export async function getRecipe(id: string): Promise<RecipeDetails> {
   return apiFetch<RecipeDetails>(`/api/recipes/${id}`);
 }
 
-export async function getRecentRecipes(): Promise<{
+export async function getRecentRecipes(limit?: number): Promise<{
   items: RecentRecipeListItem[];
 }> {
+  const searchParams = new URLSearchParams({ scope: 'recent' });
+
+  if (typeof limit === 'number') {
+    searchParams.set('limit', String(limit));
+  }
+
   return apiFetch<{ items: RecentRecipeListItem[] }>(
-    '/api/recipes?scope=recent',
+    `/api/recipes?${searchParams.toString()}`,
   );
 }
 

@@ -130,6 +130,13 @@ interface VideosTableClient {
         error: PostgrestError | null;
       }>;
     };
+    in(
+      column: 'id',
+      values: string[],
+    ): Promise<{
+      data: Pick<VideoRow, 'id' | 'thumbnail_url'>[] | null;
+      error: PostgrestError | null;
+    }>;
   };
 }
 
@@ -388,29 +395,17 @@ export async function listRecentRecipes(
 
   if (recipes.length === 0) return [];
 
-  const videoIds = [...new Set(recipes.map((r) => r.video_id))];
+  const videoIds = [...new Set(recipes.map((recipe) => recipe.video_id))];
   const videoResult = await supabase
     .from('videos')
     .select('id, thumbnail_url')
-    .eq('id', videoIds[0])
-    .maybeSingle();
+    .in('id', videoIds);
 
   assertNoSupabaseError(videoResult.error);
 
-  // 단일 조회 후 Map 구성 (N+1 → 1+1)
-  const videoMap = new Map<string, string | null>();
-  if (videoResult.data) {
-    videoMap.set(videoResult.data.id, videoResult.data.thumbnail_url);
-  }
-  // 나머지 video도 조회 (videoIds가 여러 개일 경우)
-  for (const vid of videoIds.slice(1)) {
-    const r = await supabase
-      .from('videos')
-      .select('id, thumbnail_url')
-      .eq('id', vid)
-      .maybeSingle();
-    if (r.data) videoMap.set(r.data.id, r.data.thumbnail_url);
-  }
+  const videoMap = new Map(
+    (videoResult.data ?? []).map((video) => [video.id, video.thumbnail_url]),
+  );
 
   return recipes.map((recipe) => ({
     id: recipe.id,
