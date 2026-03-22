@@ -39,6 +39,8 @@ import { parseYouTubeUrl } from '@/lib/youtube/url-parser';
 
 const EXTRACTION_TTL_MS = 24 * 60 * 60 * 1_000;
 const PIPELINE_TIMEOUT_MS = 90_000;
+const CAPTION_STAGE_TIMEOUT_MS = 20_000;
+const STALE_EXTRACTION_MS = 2 * 60 * 1_000;
 const EXTRACTOR_VERSION = 'step2-ai-engine';
 const MIN_SOURCE_TEXT_CHARS = 40;
 
@@ -156,8 +158,23 @@ function createPipelineController(timeoutMs: number) {
 
   return {
     signal: controller.signal,
-    cleanup: () => clearTimeout(timeoutId),
+    cleanup: () => {
+      clearTimeout(timeoutId);
+      controller.abort();
+    },
   };
+}
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string) {
+  return new Promise<T>((resolve, reject) => {
+    const timeoutId = setTimeout(() => {
+      const error = new Error(`${label} timed out after ${ms}ms`);
+      error.name = 'AbortError';
+      reject(error);
+    }, ms);
+
+    promise.then(resolve, reject).finally(() => clearTimeout(timeoutId));
+  });
 }
 
 function abortableFetch(signal: AbortSignal): typeof fetch {
@@ -188,6 +205,13 @@ function isActiveStatus(status: ExtractionStatus) {
 
 function isFresh(updatedAt: string) {
   return Date.now() - new Date(updatedAt).getTime() <= EXTRACTION_TTL_MS;
+}
+
+function isStaleActiveExtraction(extraction: ExtractionRow) {
+  return (
+    isActiveStatus(extraction.status) &&
+    Date.now() - new Date(extraction.updated_at).getTime() > STALE_EXTRACTION_MS
+  );
 }
 
 function mapUrlErrorToCode(error: string | undefined) {
@@ -314,6 +338,10 @@ async function selectReusableExtraction(extractions: ExtractionRow[]) {
   );
 
   if (activeExtraction) {
+    if (isStaleActiveExtraction(activeExtraction)) {
+      return null;
+    }
+
     return activeExtraction;
   }
 
@@ -471,7 +499,11 @@ async function processExtractionPipeline(input: {
     );
 
     const captions = await runStage('fetching_captions', () =>
-      fetchCaptions(videoId, { fetchImpl }),
+      withTimeout(
+        fetchCaptions(videoId, { fetchImpl }),
+        CAPTION_STAGE_TIMEOUT_MS,
+        'fetchCaptions',
+      ),
     );
 
     await upsertVideo({

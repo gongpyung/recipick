@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import {
@@ -15,8 +15,11 @@ import {
 } from 'lucide-react';
 
 import { getExtraction } from '@/lib/api/client';
-import { cn } from '@/lib/utils';
 import { ErrorDisplay } from '@/components/error-display';
+import { cn } from '@/lib/utils';
+
+const POLLING_TIMEOUT_MS = 120_000;
+const POLLING_INTERVAL_MS = 2_000;
 
 const STAGES = [
   {
@@ -63,14 +66,33 @@ function getStageIndex(stage: string) {
 
 export function ExtractionProgress({ extractionId }: { extractionId: string }) {
   const router = useRouter();
+  const startedAtRef = useRef(Date.now());
+  const [isTimedOut, setIsTimedOut] = useState(false);
+
+  useEffect(() => {
+    const remaining = POLLING_TIMEOUT_MS - (Date.now() - startedAtRef.current);
+    if (remaining <= 0) {
+      setIsTimedOut(true);
+      return;
+    }
+    const id = setTimeout(() => setIsTimedOut(true), remaining);
+    return () => clearTimeout(id);
+  }, []);
+
   const { data, error, mutate } = useSWR(
     ['extraction', extractionId],
     () => getExtraction(extractionId),
     {
-      refreshInterval: (currentData) =>
-        currentData?.status === 'completed' || currentData?.status === 'failed'
-          ? 0
-          : 2000,
+      refreshInterval: (currentData) => {
+        if (
+          Date.now() - startedAtRef.current > POLLING_TIMEOUT_MS ||
+          currentData?.status === 'completed' ||
+          currentData?.status === 'failed'
+        ) {
+          return 0;
+        }
+        return POLLING_INTERVAL_MS;
+      },
     },
   );
 
@@ -101,12 +123,22 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
     );
   }
 
+  if (isTimedOut) {
+    return (
+      <ErrorDisplay
+        code="EXTRACTION_TIMEOUT"
+        message="처리 시간이 초과되었습니다. 다시 시도해 주세요."
+        retryLabel="홈에서 다시 시도하기"
+        onRetry={() => router.push('/')}
+      />
+    );
+  }
+
   const currentStage = data?.stage ?? 'validating_url';
   const currentIndex = getStageIndex(currentStage);
 
   return (
     <div className="flex flex-col items-center">
-      {/* Chef emoji icon */}
       <div className="relative mb-6">
         <div className="absolute inset-0 scale-125 animate-pulse rounded-full bg-[#f8bbd9]/30" />
         <div className="relative flex h-28 w-28 items-center justify-center rounded-full bg-gradient-to-br from-[#fce4ec] to-[#f8bbd9] shadow-lg shadow-[#f8bbd9]/30">
@@ -117,7 +149,6 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
         </div>
       </div>
 
-      {/* Title */}
       <h1 className="font-display mb-2 text-2xl font-bold text-[#4a4a4a]">
         레시피를 만들고 있어요
       </h1>
@@ -125,13 +156,10 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
         잠시만 기다려 주세요. 보통 1~2분 정도 걸려요
       </p>
 
-      {/* Timeline card */}
       <div className="relative w-full">
-        {/* Card decorations */}
         <div className="absolute inset-0 scale-[0.98] rotate-2 transform rounded-3xl bg-[#c8e6c9]/40" />
         <div className="absolute inset-0 scale-[0.99] -rotate-1 transform rounded-3xl bg-[#ffe0b2]/40" />
 
-        {/* Main card */}
         <div className="relative rounded-3xl border border-[#f8bbd9]/20 bg-white p-6 shadow-sm">
           <div className="space-y-0">
             {STAGES.map((stage, index) => {
@@ -143,7 +171,6 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
               return (
                 <div key={stage.key} className="relative">
                   <div className="flex items-start gap-4">
-                    {/* Circle icon */}
                     <div className="relative flex flex-col items-center">
                       <div
                         className={cn(
@@ -164,7 +191,6 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
                         )}
                       </div>
 
-                      {/* Connecting line */}
                       {!isLast && (
                         <div
                           className={cn(
@@ -175,7 +201,6 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
                       )}
                     </div>
 
-                    {/* Text */}
                     <div className="flex-1 pt-2">
                       <div className="flex items-center gap-2">
                         <span
@@ -193,7 +218,6 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
                         )}
                       </div>
 
-                      {/* Current stage description */}
                       {isCurrent && (
                         <p className="mt-1 animate-pulse text-xs text-[#8b7b7b]">
                           {stage.desc}
