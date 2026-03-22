@@ -1,15 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-const generateText = vi.fn()
+const generateText = vi.fn();
 
 vi.mock('@/lib/llm/client', () => ({
   generateText,
-}))
+}));
 
 describe('extractStructuredRecipe', () => {
   beforeEach(() => {
-    generateText.mockReset()
-  })
+    generateText.mockReset();
+  });
 
   it('repairs invalid output on the second attempt', async () => {
     generateText
@@ -67,9 +67,10 @@ describe('extractStructuredRecipe', () => {
           confidence: 'high',
         }),
         model: 'glm-test',
-      })
+      });
 
-    const { extractStructuredRecipe } = await import('@/lib/extraction/extractor')
+    const { extractStructuredRecipe } =
+      await import('@/lib/extraction/extractor');
     const result = await extractStructuredRecipe({
       title: '제육볶음',
       cleanedText: {
@@ -84,11 +85,11 @@ describe('extractStructuredRecipe', () => {
         sourceType: 'video',
         language: 'ko',
       },
-    })
+    });
 
-    expect(generateText).toHaveBeenCalledTimes(2)
-    expect(result.attemptCount).toBe(2)
-    expect(result.recipe.ingredients).toHaveLength(1)
-    expect(result.recipe.steps).toHaveLength(1)
-  })
-})
+    expect(generateText).toHaveBeenCalledTimes(2);
+    expect(result.attemptCount).toBe(2);
+    expect(result.recipe.ingredients).toHaveLength(1);
+    expect(result.recipe.steps).toHaveLength(1);
+  });
+});

@@ -21,11 +21,11 @@ export function ServingControl({
   if (disabled) {
     return (
       <div className="relative">
-        <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#ffe0b2]/40 rounded-2xl" />
-        <div className="relative bg-[#fff8e1] rounded-2xl p-4 shadow-lg shadow-[#ffe0b2]/20 border border-[#ffe0b2]/30">
+        <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#ffe0b2]/40" />
+        <div className="relative rounded-2xl border border-[#ffe0b2]/30 bg-[#fff8e1] p-4 shadow-lg shadow-[#ffe0b2]/20">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#ffe0b2] rounded-xl flex items-center justify-center">
-              <Info className="w-4 h-4 text-[#e65100]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffe0b2]">
+              <Info className="h-4 w-4 text-[#e65100]" />
             </div>
             <span className="font-body text-sm text-[#6b5b4f]">
               영상에 인분 정보가 명시되지 않아 인분 조절을 사용할 수 없어요
@@ -39,42 +39,50 @@ export function ServingControl({
   return (
     <div className="relative">
       {/* Decorative background */}
-      <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#ffe0b2]/40 rounded-2xl" />
+      <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#ffe0b2]/40" />
 
-      <div className="relative bg-white rounded-2xl p-4 shadow-lg shadow-[#ffe0b2]/20 border border-[#ffe0b2]/30">
+      <div className="relative rounded-2xl border border-[#ffe0b2]/30 bg-white p-4 shadow-lg shadow-[#ffe0b2]/20">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-[#ffe0b2] rounded-xl flex items-center justify-center">
-              <Users className="w-4 h-4 text-[#e65100]" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffe0b2]">
+              <Users className="h-4 w-4 text-[#e65100]" />
             </div>
-            <span className="text-sm font-medium text-[#6b5b4f]">인분 조절</span>
+            <span className="text-sm font-medium text-[#6b5b4f]">
+              인분 조절
+            </span>
           </div>
 
           <div className="flex items-center gap-3">
             <Button
               disabled={targetServings <= MIN_SERVINGS}
-              onClick={() => onChange(Math.max(MIN_SERVINGS, targetServings - 1))}
+              onClick={() =>
+                onChange(Math.max(MIN_SERVINGS, targetServings - 1))
+              }
               size="icon"
               type="button"
               variant="ghost"
-              className="w-10 h-10 bg-[#fef7f9] rounded-full flex items-center justify-center hover:bg-[#fce4ec] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-[#f8bbd9]/30 cursor-pointer"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#f8bbd9]/30 bg-[#fef7f9] shadow-sm transition-colors hover:bg-[#fce4ec] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Minus className="w-4 h-4 text-[#e8a4b8]" />
+              <Minus className="h-4 w-4 text-[#e8a4b8]" />
             </Button>
 
-            <div className="w-14 h-12 bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] rounded-2xl flex items-center justify-center shadow-md">
-              <span className="text-xl font-bold text-white">{targetServings}</span>
+            <div className="flex h-12 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-md">
+              <span className="text-xl font-bold text-white">
+                {targetServings}
+              </span>
             </div>
 
             <Button
               disabled={targetServings >= MAX_SERVINGS}
-              onClick={() => onChange(Math.min(MAX_SERVINGS, targetServings + 1))}
+              onClick={() =>
+                onChange(Math.min(MAX_SERVINGS, targetServings + 1))
+              }
               size="icon"
               type="button"
               variant="ghost"
-              className="w-10 h-10 bg-[#fef7f9] rounded-full flex items-center justify-center hover:bg-[#fce4ec] transition-colors disabled:opacity-40 disabled:cursor-not-allowed shadow-sm border border-[#f8bbd9]/30 cursor-pointer"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full border border-[#f8bbd9]/30 bg-[#fef7f9] shadow-sm transition-colors hover:bg-[#fce4ec] disabled:cursor-not-allowed disabled:opacity-40"
             >
-              <Plus className="w-4 h-4 text-[#e8a4b8]" />
+              <Plus className="h-4 w-4 text-[#e8a4b8]" />
             </Button>
           </div>
         </div>

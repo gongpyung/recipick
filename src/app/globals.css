@@ -7,8 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
-  --font-body: var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-sans:
+    var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  --font-body:
+    var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
   --font-display: var(--font-jua), 'Apple SD Gothic Neo', cursive;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback';
   --font-heading: var(--font-jua), 'Apple SD Gothic Neo', cursive;
@@ -164,7 +166,8 @@
 
 /* Body font */
 .font-body {
-  font-family: var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-family:
+    var(--font-gowun), 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
 }
 
 /* Hero section gradient */
@@ -175,11 +178,13 @@
 
 /* Warm card with depth */
 .card-culinary {
-  background: #FFFFFF;
+  background: #ffffff;
   border: 1px solid rgba(248, 187, 217, 0.3);
   border-radius: 1.5rem;
   box-shadow: 0 4px 20px rgba(248, 187, 217, 0.2);
-  transition: box-shadow 0.25s ease, transform 0.25s ease;
+  transition:
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
 }
 .card-culinary:hover {
   box-shadow: 0 8px 30px rgba(248, 187, 217, 0.3);
@@ -216,9 +221,9 @@
 
 /* Gold accent badge */
 .badge-gold {
-  background: #FEF3C7;
-  color: #92400E;
-  border: 1px solid #FDE68A;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
 }
 
 /* Sage green for tips */
@@ -237,7 +242,7 @@
   .no-print,
   header,
   nav,
-  [data-slot="button"] {
+  [data-slot='button'] {
     display: none !important;
   }
   body {

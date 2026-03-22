@@ -7,6 +7,7 @@
 **서비스명**: 레시픽 (Recipick)
 **슬로건**: YouTube 영상에서 레시피를 뽑아내는 AI 도우미
 **핵심 기능**:
+
 - YouTube URL 입력 → 자막·설명 추출 → Z.ai LLM으로 구조화된 레시피 생성
 - 인분 자동 조절 (배율 기반 재료 스케일링)
 - 추출 이력 조회 및 레시피 편집
@@ -18,19 +19,19 @@
 
 ## 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| 프레임워크 | Next.js 15 (App Router), React 19 |
-| 언어 | TypeScript 5 (strict) |
-| 스타일링 | Tailwind CSS v4, shadcn/ui v4, tw-animate-css |
-| UI 컴포넌트 | shadcn/ui v4 (`@base-ui/react`), lucide-react |
-| 데이터베이스 | Supabase (PostgreSQL) |
-| LLM | Z.ai API (`glm-4.5-air` 기본값) |
-| 데이터 페칭 | SWR v2 (클라이언트), Server Components (SSR) |
-| 유효성 검증 | Zod v4 |
-| 유닛 테스트 | Vitest v3 |
-| E2E 테스트 | Playwright |
-| 린트/포맷 | ESLint 9, Prettier (tailwindcss 플러그인 포함) |
+| 영역         | 기술                                           |
+| ------------ | ---------------------------------------------- |
+| 프레임워크   | Next.js 15 (App Router), React 19              |
+| 언어         | TypeScript 5 (strict)                          |
+| 스타일링     | Tailwind CSS v4, shadcn/ui v4, tw-animate-css  |
+| UI 컴포넌트  | shadcn/ui v4 (`@base-ui/react`), lucide-react  |
+| 데이터베이스 | Supabase (PostgreSQL)                          |
+| LLM          | Z.ai API (`glm-4.5-air` 기본값)                |
+| 데이터 페칭  | SWR v2 (클라이언트), Server Components (SSR)   |
+| 유효성 검증  | Zod v4                                         |
+| 유닛 테스트  | Vitest v3                                      |
+| E2E 테스트   | Playwright                                     |
+| 린트/포맷    | ESLint 9, Prettier (tailwindcss 플러그인 포함) |
 
 ---
 
@@ -152,11 +153,9 @@ src/
 
 ```typescript
 // 추출 상태 폴링 (완료/실패 시 자동 중단)
-const { data } = useSWR(
-  `/api/extractions/${extractionId}`,
-  fetcher,
-  { refreshInterval: isActive ? 2000 : 0 }
-)
+const { data } = useSWR(`/api/extractions/${extractionId}`, fetcher, {
+  refreshInterval: isActive ? 2000 : 0,
+});
 ```
 
 `src/lib/api/client.ts`의 `apiFetch`를 SWR fetcher로 사용한다.
@@ -168,7 +167,7 @@ const { data } = useSWR(
 ```typescript
 // 서버에서 직접 Supabase 쿼리
 export async function RecentRecipes() {
-  const items = (await listRecentRecipes()).slice(0, 5)
+  const items = (await listRecentRecipes()).slice(0, 5);
   // ...JSX 반환
 }
 ```
@@ -180,13 +179,13 @@ export async function RecentRecipes() {
 ```typescript
 // src/lib/extraction/service.ts
 interface SupabaseSubset {
-  from(table: 'videos'): VideosTableClient
-  from(table: 'extractions'): ExtractionsTableClient
+  from(table: 'videos'): VideosTableClient;
+  from(table: 'extractions'): ExtractionsTableClient;
 }
 
 function getSupabase(): SupabaseSubset {
-  const client: unknown = getSupabaseServerClient()
-  return client as SupabaseSubset  // 의도적 캐스팅
+  const client: unknown = getSupabaseServerClient();
+  return client as SupabaseSubset; // 의도적 캐스팅
 }
 ```
 
@@ -195,10 +194,12 @@ function getSupabase(): SupabaseSubset {
 ### 4. LLM 재시도 전략 (2-tier retry)
 
 **Tier 1 — transport retry** (`src/lib/llm/client.ts`):
+
 - 기본 2회 시도, `retryable` 오류(5xx, 네트워크 오류, 빈 응답)에만 재시도
 - jittered exponential backoff: `300ms * 2^(attempt-1) + random(0..74)ms`
 
 **Tier 2 — schema retry** (`src/lib/extraction/schema-retry.ts`):
+
 - Zod 검증 실패 시 이전 실패 내역을 프롬프트에 포함해 LLM 재호출
 - `runWithSchemaRetry({ generate, validate, maxAttempts: 2 })`
 - `ZodError` 또는 `SchemaRetryableError`가 아닌 오류는 즉시 throw
@@ -210,16 +211,19 @@ function getSupabase(): SupabaseSubset {
 `src/app/globals.css`에 디자인 토큰이 정의되어 있다.
 
 **팔레트**:
+
 - primary: `#e8a4b8` (소프트 핑크)
 - secondary: `#f5e6d3` (웜 베이지)
 - accent: `#c8e6c9` (세이지 그린)
 - background: `#fef7f9`
 
 **폰트**:
+
 - `--font-display` / `.font-display`: 주아 (Jua) — 제목, 브랜딩
 - `--font-body` / `.font-body`: 고운돋움 (Gowun Dodum) — 본문
 
 **유틸리티 클래스** (globals.css 정의):
+
 - `.card-culinary` — 핑크 그림자 카드 (hover 시 lift)
 - `.hero-bg` — 핑크 그라데이션 배경
 - `.tips-sage` — 세이지 그린 팁 박스
@@ -232,11 +236,13 @@ function getSupabase(): SupabaseSubset {
 ## 테스트 전략
 
 ### 유닛 테스트 (Vitest)
+
 - 위치: `src/**/*.test.ts`
 - 대상: `src/lib/` 내 순수 함수 (파싱, 스케일링, 정규화, 오류 매핑)
 - 실행: `npm run test`
 
 ### E2E 테스트 (Playwright)
+
 - 위치: `e2e/`
 - 설정: `playwright.config.ts`
 - 브라우저: Desktop Chrome (1440×900), Mobile Pixel 7 (375×812)

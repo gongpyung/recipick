@@ -3,7 +3,10 @@ import type { RecipeSource, StructuredRecipe } from '@/lib/extraction/types';
 import { generateText, type LlmMessage } from '@/lib/llm/client';
 import { normalizeStructuredRecipe } from '@/lib/extraction/normalizer';
 import { parseStructuredRecipePayload } from '@/lib/extraction/parser';
-import { buildExtractionMessages, buildRepairMessages } from '@/lib/extraction/prompts';
+import {
+  buildExtractionMessages,
+  buildRepairMessages,
+} from '@/lib/extraction/prompts';
 import { parseStructuredRecipe } from '@/lib/extraction/recipe-schema';
 import {
   runWithSchemaRetry,
@@ -85,7 +88,8 @@ export async function extractStructuredRecipe({
         latestRawOutput = completion.content;
         latestModel = completion.model ?? '';
         latestRequestId =
-          completion.rawResponse && typeof completion.rawResponse.id === 'string'
+          completion.rawResponse &&
+          typeof completion.rawResponse.id === 'string'
             ? completion.rawResponse.id
             : null;
 

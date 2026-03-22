@@ -32,12 +32,14 @@
 <td width="50%">
 
 ### 🔗 URL 입력 → 레시피 추출
+
 YouTube 링크 하나만 붙여넣으면 AI가 자막과 설명을 분석해 재료, 조리 순서, 팁까지 깔끔하게 정리
 
 </td>
 <td width="50%">
 
 ### ⚖️ 인분 조절
+
 1~20인분까지 조절하면 재료량이 자동 계산. 비정형 표현(적당량, 약간)은 그대로 유지
 
 </td>
@@ -46,12 +48,14 @@ YouTube 링크 하나만 붙여넣으면 AI가 자막과 설명을 분석해 재
 <td width="50%">
 
 ### ✏️ 레시피 편집
+
 AI 추출 결과가 마음에 안 들면 직접 수정 가능. 재료/단계/팁 추가·삭제·수정
 
 </td>
 <td width="50%">
 
 ### 📋 추출 이력
+
 최근 추출한 레시피를 한눈에 확인하고 다시 열기
 
 </td>
@@ -145,18 +149,18 @@ recipick/
 
 ## 🔧 기술 스택
 
-| 영역 | 기술 |
-|------|------|
-| **Framework** | Next.js 15 (App Router), React 19 |
-| **Language** | TypeScript 5 (strict) |
-| **Styling** | Tailwind CSS v4, shadcn/ui v4 (@base-ui/react) |
-| **Database** | Supabase (PostgreSQL) |
-| **AI/LLM** | Z.ai API (GLM-5, OpenAI 호환) |
-| **Data Fetching** | SWR v2 (클라이언트), Server Components (SSR) |
-| **Validation** | Zod v4 |
-| **Unit Test** | Vitest (50개 테스트) |
-| **E2E Test** | Playwright (44개 테스트, 데스크톱+모바일) |
-| **Font** | Jua (제목) + Gowun Batang (본문) |
+| 영역              | 기술                                           |
+| ----------------- | ---------------------------------------------- |
+| **Framework**     | Next.js 15 (App Router), React 19              |
+| **Language**      | TypeScript 5 (strict)                          |
+| **Styling**       | Tailwind CSS v4, shadcn/ui v4 (@base-ui/react) |
+| **Database**      | Supabase (PostgreSQL)                          |
+| **AI/LLM**        | Z.ai API (GLM-5, OpenAI 호환)                  |
+| **Data Fetching** | SWR v2 (클라이언트), Server Components (SSR)   |
+| **Validation**    | Zod v4                                         |
+| **Unit Test**     | Vitest (50개 테스트)                           |
+| **E2E Test**      | Playwright (44개 테스트, 데스크톱+모바일)      |
+| **Font**          | Jua (제목) + Gowun Batang (본문)               |
 
 ---
 

@@ -36,14 +36,14 @@ components/  →  api/client  →  (fetch to /api/* routes)
 
 브라우저에서 `/api/*` 라우트를 호출하는 fetch 래퍼.
 
-| 함수 | 설명 |
-|------|------|
-| `apiFetch<T>(url, options)` | 공통 fetch + 에러 핸들링. 실패 시 `ApiError` throw |
-| `createExtraction(youtubeUrl, forceReExtract)` | `POST /api/extractions` |
-| `getExtraction(id)` | `GET /api/extractions/[id]` |
-| `getRecipe(id)` | `GET /api/recipes/[id]` |
-| `getRecentRecipes()` | `GET /api/recipes?scope=recent` |
-| `updateRecipe(id, data)` | `PATCH /api/recipes/[id]` |
+| 함수                                           | 설명                                               |
+| ---------------------------------------------- | -------------------------------------------------- |
+| `apiFetch<T>(url, options)`                    | 공통 fetch + 에러 핸들링. 실패 시 `ApiError` throw |
+| `createExtraction(youtubeUrl, forceReExtract)` | `POST /api/extractions`                            |
+| `getExtraction(id)`                            | `GET /api/extractions/[id]`                        |
+| `getRecipe(id)`                                | `GET /api/recipes/[id]`                            |
+| `getRecentRecipes()`                           | `GET /api/recipes?scope=recent`                    |
+| `updateRecipe(id, data)`                       | `PATCH /api/recipes/[id]`                          |
 
 **주의**: `ApiError` 클래스는 `code`, `status`, `category` 프로퍼티를 가진다. SWR의 `error` 객체에서 이 프로퍼티들을 직접 참조한다.
 
@@ -51,10 +51,10 @@ components/  →  api/client  →  (fetch to /api/* routes)
 
 API 라우트에서 사용하는 응답 헬퍼.
 
-| 함수 | 설명 |
-|------|------|
+| 함수                                   | 설명                                         |
+| -------------------------------------- | -------------------------------------------- |
 | `errorResponse(code, message, status)` | `{ error, code, category }` 형태의 JSON 응답 |
-| `successResponse(data, status)` | 성공 JSON 응답 (기본 200) |
+| `successResponse(data, status)`        | 성공 JSON 응답 (기본 200)                    |
 
 에러 카테고리는 `ExtractionErrorCode`에서 자동 추론되며, 그 외 코드는 HTTP 상태로부터 추론한다.
 
@@ -64,34 +64,34 @@ API 라우트에서 사용하는 응답 헬퍼.
 
 ### 파일별 역할
 
-| 파일 | 역할 | 서버/클라이언트 |
-|------|------|---------------|
-| `service.ts` | 파이프라인 오케스트레이터. 모든 단계를 조율 | 서버 전용 |
-| `extractor.ts` | LLM 호출 + schema-retry 루프 | 서버 전용 |
-| `normalizer.ts` | 추출 결과 정규화 (유닛, confidence, 중복 경고 제거) | 서버 전용 |
-| `prompts.ts` | LLM 시스템/유저 프롬프트 빌더 | 서버 전용 |
-| `parser.ts` | LLM 텍스트 응답에서 JSON 추출 (fenced block, balanced braces) | 서버 전용 |
-| `recipe-schema.ts` | Zod v4 스키마 정의 + `parseStructuredRecipe()` | 양쪽 사용 가능 |
-| `schema-retry.ts` | Zod 실패 시 이전 이슈를 포함한 재시도 로직 | 서버 전용 |
-| `errors.ts` | `ExtractionErrorCode` enum + 한국어 메시지 매핑 | 양쪽 사용 가능 |
-| `types.ts` | 모든 도메인 타입 정의 (StructuredRecipe, ExtractionRecord 등) | 양쪽 사용 가능 |
-| `unit-map.ts` | 한국어/영어 계량 단위 정규화 맵 | 양쪽 사용 가능 |
+| 파일               | 역할                                                          | 서버/클라이언트 |
+| ------------------ | ------------------------------------------------------------- | --------------- |
+| `service.ts`       | 파이프라인 오케스트레이터. 모든 단계를 조율                   | 서버 전용       |
+| `extractor.ts`     | LLM 호출 + schema-retry 루프                                  | 서버 전용       |
+| `normalizer.ts`    | 추출 결과 정규화 (유닛, confidence, 중복 경고 제거)           | 서버 전용       |
+| `prompts.ts`       | LLM 시스템/유저 프롬프트 빌더                                 | 서버 전용       |
+| `parser.ts`        | LLM 텍스트 응답에서 JSON 추출 (fenced block, balanced braces) | 서버 전용       |
+| `recipe-schema.ts` | Zod v4 스키마 정의 + `parseStructuredRecipe()`                | 양쪽 사용 가능  |
+| `schema-retry.ts`  | Zod 실패 시 이전 이슈를 포함한 재시도 로직                    | 서버 전용       |
+| `errors.ts`        | `ExtractionErrorCode` enum + 한국어 메시지 매핑               | 양쪽 사용 가능  |
+| `types.ts`         | 모든 도메인 타입 정의 (StructuredRecipe, ExtractionRecord 등) | 양쪽 사용 가능  |
+| `unit-map.ts`      | 한국어/영어 계량 단위 정규화 맵                               | 양쪽 사용 가능  |
 
 ### `service.ts` 핵심 함수
 
-| 함수 | 설명 |
-|------|------|
-| `createExtraction(url, options?)` | 외부 진입점. URL 검증 → 캐시 확인 → 파이프라인 시작 |
-| `getExtraction(id)` | 추출 상태 조회 (폴링용) |
+| 함수                               | 설명                                                |
+| ---------------------------------- | --------------------------------------------------- |
+| `createExtraction(url, options?)`  | 외부 진입점. URL 검증 → 캐시 확인 → 파이프라인 시작 |
+| `getExtraction(id)`                | 추출 상태 조회 (폴링용)                             |
 | `processExtractionPipeline(input)` | 6단계 비동기 파이프라인. `setTimeout(0)`으로 호출됨 |
 
 ### 에러 코드 체계 (`errors.ts`)
 
-| 카테고리 | 코드 예시 | HTTP 상태 |
-|----------|----------|-----------|
-| `user_error` | `INVALID_URL`, `NON_RECIPE_VIDEO`, `INSUFFICIENT_SOURCE_TEXT` | 400, 404, 422 |
+| 카테고리         | 코드 예시                                                       | HTTP 상태     |
+| ---------------- | --------------------------------------------------------------- | ------------- |
+| `user_error`     | `INVALID_URL`, `NON_RECIPE_VIDEO`, `INSUFFICIENT_SOURCE_TEXT`   | 400, 404, 422 |
 | `upstream_error` | `LLM_REQUEST_FAILED`, `QUOTA_EXCEEDED`, `METADATA_FETCH_FAILED` | 429, 502, 504 |
-| `internal_error` | `INTERNAL_ERROR`, `RECIPE_SAVE_FAILED` | 500 |
+| `internal_error` | `INTERNAL_ERROR`, `RECIPE_SAVE_FAILED`                          | 500           |
 
 ### 주의사항
 
@@ -108,14 +108,14 @@ API 라우트에서 사용하는 응답 헬퍼.
 
 OpenAI 호환 `/chat/completions` 엔드포인트를 호출하는 HTTP 클라이언트.
 
-| 설정 | 기본값 |
-|------|-------|
-| 모델 | `glm-4.5-air` |
-| temperature | `0.1` (결정적 출력) |
-| 타임아웃 | 90초 |
-| 최대 시도 | 2회 |
-| response_format | `json_object` |
-| 재시도 백오프 | `300ms * 2^(n-1) + random(0..74ms)` |
+| 설정            | 기본값                              |
+| --------------- | ----------------------------------- |
+| 모델            | `glm-4.5-air`                       |
+| temperature     | `0.1` (결정적 출력)                 |
+| 타임아웃        | 90초                                |
+| 최대 시도       | 2회                                 |
+| response_format | `json_object`                       |
+| 재시도 백오프   | `300ms * 2^(n-1) + random(0..74ms)` |
 
 **핵심 클래스**: `LlmClientError` -- `code` (`LLM_REQUEST_FAILED` | `LLM_RATE_LIMITED` | `INVALID_MODEL_OUTPUT`), `status`, `retryable` 프로퍼티
 
@@ -126,6 +126,7 @@ OpenAI 호환 `/chat/completions` 엔드포인트를 호출하는 HTTP 클라이
 LLM 응답 페이로드에서 텍스트를 추출하는 다형적 파서.
 
 지원하는 응답 형식:
+
 1. `string` (직접 텍스트)
 2. `{ output_text: string }` (일부 모델)
 3. `{ content: string }` (직접)
@@ -140,13 +141,13 @@ LLM 응답 페이로드에서 텍스트를 추출하는 다형적 파서.
 
 ### `service.ts` (서버 전용)
 
-| 함수 | 설명 |
-|------|------|
-| `saveRecipeAggregate(input)` | 레시피 + 재료 + 단계 + 경고를 한 번에 저장. 자식 저장 실패 시 레시피 롤백 |
-| `getRecipe(id)` | 레시피 + 자식 테이블 + 영상 정보를 조인하여 `RecipeDetails` 반환 |
-| `listRecentRecipes(limit)` | 최근 레시피 목록 (기본 20개) |
-| `updateRecipeAggregate(input)` | 레시피 수정 (delete-then-insert 전략) |
-| `getRecipeIdByExtractionId(id)` | extraction → recipe ID 조회 |
+| 함수                            | 설명                                                                      |
+| ------------------------------- | ------------------------------------------------------------------------- |
+| `saveRecipeAggregate(input)`    | 레시피 + 재료 + 단계 + 경고를 한 번에 저장. 자식 저장 실패 시 레시피 롤백 |
+| `getRecipe(id)`                 | 레시피 + 자식 테이블 + 영상 정보를 조인하여 `RecipeDetails` 반환          |
+| `listRecentRecipes(limit)`      | 최근 레시피 목록 (기본 20개)                                              |
+| `updateRecipeAggregate(input)`  | 레시피 수정 (delete-then-insert 전략)                                     |
+| `getRecipeIdByExtractionId(id)` | extraction → recipe ID 조회                                               |
 
 **롤백 전략**: `saveRecipeAggregate`에서 재료/단계/경고 저장 실패 시 레시피 행을 삭제하는 "수동 롤백" 사용. Supabase가 DB 트랜잭션을 직접 지원하지 않기 때문이며, 기술 부채로 분류됨.
 
@@ -154,12 +155,13 @@ LLM 응답 페이로드에서 텍스트를 추출하는 다형적 파서.
 
 ### `scaling.ts` (클라이언트 사용 가능)
 
-| 함수 | 설명 |
-|------|------|
-| `scaleIngredient(ingredient, target, base)` | 인분 비율에 따른 재료량 계산 |
-| `formatAmount(amount)` | 숫자 포맷 (정수 또는 소수 1자리) |
+| 함수                                        | 설명                             |
+| ------------------------------------------- | -------------------------------- |
+| `scaleIngredient(ingredient, target, base)` | 인분 비율에 따른 재료량 계산     |
+| `formatAmount(amount)`                      | 숫자 포맷 (정수 또는 소수 1자리) |
 
 **스케일링 규칙**:
+
 - `baseServings === null` 또는 `scalable === false` → 원본 값 유지
 - `baseServings === 0` → 0으로 나누기 방지, 원본 유지
 - 그 외 → `amount * (targetServings / baseServings)`
@@ -186,14 +188,15 @@ LLM 응답 페이로드에서 텍스트를 추출하는 다형적 파서.
 
 ### `url-parser.ts` (클라이언트 + 서버)
 
-| 지원 형식 | 예시 |
-|----------|------|
-| 표준 | `https://www.youtube.com/watch?v=ID` |
-| 단축 | `https://youtu.be/ID` |
-| 모바일 | `https://m.youtube.com/watch?v=ID` |
-| Shorts | `https://www.youtube.com/shorts/ID` |
+| 지원 형식 | 예시                                 |
+| --------- | ------------------------------------ |
+| 표준      | `https://www.youtube.com/watch?v=ID` |
+| 단축      | `https://youtu.be/ID`                |
+| 모바일    | `https://m.youtube.com/watch?v=ID`   |
+| Shorts    | `https://www.youtube.com/shorts/ID`  |
 
 **규칙**:
+
 - HTTPS만 허용
 - 영상 ID는 정확히 11자 (`[A-Za-z0-9_-]{11}`)
 - `sourceType`은 `'video'` 또는 `'shorts'`
@@ -202,10 +205,10 @@ LLM 응답 페이로드에서 텍스트를 추출하는 다형적 파서.
 
 YouTube Data API v3을 호출하여 메타데이터와 자막을 가져온다.
 
-| 함수 | 설명 |
-|------|------|
+| 함수                                   | 설명                                       |
+| -------------------------------------- | ------------------------------------------ |
 | `fetchVideoMetadata(videoId, options)` | 제목, 설명, 썸네일, 채널명, 언어, 재생시간 |
-| `fetchCaptions(videoId, options)` | 자막 텍스트 + 언어 + 자동생성 여부 |
+| `fetchCaptions(videoId, options)`      | 자막 텍스트 + 언어 + 자동생성 여부         |
 
 **자막 우선순위**: 수동 자막 > 자동 자막, 한국어 > 영어 > 기타
 

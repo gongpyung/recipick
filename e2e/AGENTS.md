@@ -28,21 +28,21 @@ e2e/
 
 ## 설정 (`playwright.config.ts`)
 
-| 항목 | 값 |
-|------|-----|
-| `testDir` | `./e2e` |
-| `outputDir` | `./e2e/.results` |
-| `fullyParallel` | `true` |
-| `timeout` | 30초 |
-| `baseURL` | `http://localhost:3000` |
-| `webServer` | `npm run dev` |
+| 항목            | 값                      |
+| --------------- | ----------------------- |
+| `testDir`       | `./e2e`                 |
+| `outputDir`     | `./e2e/.results`        |
+| `fullyParallel` | `true`                  |
+| `timeout`       | 30초                    |
+| `baseURL`       | `http://localhost:3000` |
+| `webServer`     | `npm run dev`           |
 
 ### 프로젝트 (브라우저)
 
-| 이름 | 디바이스 | 뷰포트 |
-|------|---------|--------|
+| 이름      | 디바이스       | 뷰포트     |
+| --------- | -------------- | ---------- |
 | `desktop` | Desktop Chrome | 1440 x 900 |
-| `mobile` | Pixel 7 | 375 x 812 |
+| `mobile`  | Pixel 7        | 375 x 812  |
 
 ### CI vs 로컬
 
@@ -55,14 +55,14 @@ e2e/
 
 모든 테스트는 Playwright의 `page.route()` API로 `/api/*` 요청을 가로채서 mock 응답을 반환한다.
 
-| 함수 | mock 대상 | 메서드 |
-|------|----------|--------|
-| `mockExtractionCreate(page, response)` | `**/api/extractions` | POST |
-| `mockExtractionPolling(page, stages[])` | `**/api/extractions/*` | GET (순차 응답) |
-| `mockRecipeDetail(page, recipe)` | `**/api/recipes/*` | GET (scope 없는 요청) |
-| `mockRecipeUpdate(page, response?)` | `**/api/recipes/*` | PATCH |
-| `mockRecentRecipes(page, response)` | `**/api/recipes?scope=recent` | GET |
-| `mockRecipeNotFound(page)` | `**/api/recipes/*` | GET (404 응답) |
+| 함수                                    | mock 대상                     | 메서드                |
+| --------------------------------------- | ----------------------------- | --------------------- |
+| `mockExtractionCreate(page, response)`  | `**/api/extractions`          | POST                  |
+| `mockExtractionPolling(page, stages[])` | `**/api/extractions/*`        | GET (순차 응답)       |
+| `mockRecipeDetail(page, recipe)`        | `**/api/recipes/*`            | GET (scope 없는 요청) |
+| `mockRecipeUpdate(page, response?)`     | `**/api/recipes/*`            | PATCH                 |
+| `mockRecentRecipes(page, response)`     | `**/api/recipes?scope=recent` | GET                   |
+| `mockRecipeNotFound(page)`              | `**/api/recipes/*`            | GET (404 응답)        |
 
 ### 폴링 시뮬레이션
 
@@ -90,20 +90,20 @@ await mockExtractionPolling(page, [
 
 ### 추출 Fixture (`fixtures/extraction.ts`)
 
-| 상수 | 설명 |
-|------|------|
+| 상수                         | 설명                                                        |
+| ---------------------------- | ----------------------------------------------------------- |
 | `EXTRACTION_CREATE_RESPONSE` | POST 응답 (`{ extractionId: 'ext-001', status: 'queued' }`) |
-| `EXTRACTION_STAGES` | 4단계 폴링 시퀀스 (processing x 3 → completed) |
-| `EXTRACTION_FAILED` | 실패 응답 (`NON_RECIPE_VIDEO`) |
+| `EXTRACTION_STAGES`          | 4단계 폴링 시퀀스 (processing x 3 → completed)              |
+| `EXTRACTION_FAILED`          | 실패 응답 (`NON_RECIPE_VIDEO`)                              |
 
 ### 레시피 Fixture (`fixtures/recipe.ts`)
 
-| 상수 | 설명 |
-|------|------|
-| `MOCK_RECIPE` | 완전한 레시피 (백종원 김치찌개, 2인분, 재료 5개, 단계 3개) |
-| `MOCK_RECIPE_NO_SERVINGS` | 인분 없는 레시피 (`baseServings: null`) |
-| `MOCK_RECENT_RECIPES` | 최근 레시피 목록 (2개) |
-| `MOCK_RECENT_EMPTY` | 빈 레시피 목록 |
+| 상수                      | 설명                                                       |
+| ------------------------- | ---------------------------------------------------------- |
+| `MOCK_RECIPE`             | 완전한 레시피 (백종원 김치찌개, 2인분, 재료 5개, 단계 3개) |
+| `MOCK_RECIPE_NO_SERVINGS` | 인분 없는 레시피 (`baseServings: null`)                    |
+| `MOCK_RECENT_RECIPES`     | 최근 레시피 목록 (2개)                                     |
+| `MOCK_RECENT_EMPTY`       | 빈 레시피 목록                                             |
 
 ---
 
@@ -159,12 +159,16 @@ await mockExtractionPolling(page, [
 ### 2. 한국어 텍스트로 assertion
 
 UI 텍스트가 한국어이므로 assertion도 한국어를 사용한다.
+
 ```typescript
 await expect(page.getByText('레시피를 만들고 있어요')).toBeVisible();
-await expect(page.getByRole('heading', { name: '백종원 김치찌개' })).toBeVisible();
+await expect(
+  page.getByRole('heading', { name: '백종원 김치찌개' }),
+).toBeVisible();
 ```
 
 단, URL 파서의 에러 메시지는 영어이므로 주의:
+
 ```typescript
 await expect(page.getByText('YouTube URL is required.')).toBeVisible();
 ```

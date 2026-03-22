@@ -1,7 +1,7 @@
 export type ExtractionErrorCategory =
   | 'user_error'
   | 'upstream_error'
-  | 'internal_error'
+  | 'internal_error';
 
 export enum ExtractionErrorCode {
   INVALID_URL = 'INVALID_URL',
@@ -24,9 +24,9 @@ export enum ExtractionErrorCode {
 }
 
 export interface ExtractionErrorDefinition {
-  status: number
-  category: ExtractionErrorCategory
-  message: string
+  status: number;
+  category: ExtractionErrorCategory;
+  message: string;
 }
 
 const EXTRACTION_ERROR_DEFINITIONS: Record<
@@ -118,26 +118,26 @@ const EXTRACTION_ERROR_DEFINITIONS: Record<
     category: 'internal_error',
     message: '서버 내부 오류가 발생했습니다.',
   },
-}
+};
 
 export function isExtractionErrorCode(
   code: string,
 ): code is ExtractionErrorCode {
-  return code in EXTRACTION_ERROR_DEFINITIONS
+  return code in EXTRACTION_ERROR_DEFINITIONS;
 }
 
 export function getExtractionErrorDefinition(code: ExtractionErrorCode) {
-  return EXTRACTION_ERROR_DEFINITIONS[code]
+  return EXTRACTION_ERROR_DEFINITIONS[code];
 }
 
 export function getExtractionErrorMessage(code: ExtractionErrorCode) {
-  return getExtractionErrorDefinition(code).message
+  return getExtractionErrorDefinition(code).message;
 }
 
 export function getExtractionErrorStatus(code: ExtractionErrorCode) {
-  return getExtractionErrorDefinition(code).status
+  return getExtractionErrorDefinition(code).status;
 }
 
 export function getExtractionErrorCategory(code: ExtractionErrorCode) {
-  return getExtractionErrorDefinition(code).category
+  return getExtractionErrorDefinition(code).category;
 }

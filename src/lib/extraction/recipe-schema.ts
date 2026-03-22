@@ -64,7 +64,14 @@ export const structuredRecipeSchema = z
       .object({
         usedSources: z
           .array(
-            z.enum(['title', 'description', 'captions', 'asr', 'ocr', 'vision']),
+            z.enum([
+              'title',
+              'description',
+              'captions',
+              'asr',
+              'ocr',
+              'vision',
+            ]),
           )
           .optional(),
         model: z.string().trim().nullable().optional(),

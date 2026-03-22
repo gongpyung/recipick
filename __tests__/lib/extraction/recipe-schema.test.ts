@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
-import { parseStructuredRecipe } from '@/lib/extraction/recipe-schema'
+import { parseStructuredRecipe } from '@/lib/extraction/recipe-schema';
 
 describe('parseStructuredRecipe', () => {
   const validPayload = {
@@ -35,14 +35,14 @@ describe('parseStructuredRecipe', () => {
     tips: [],
     warnings: [],
     confidence: 'high',
-  } as const
+  } as const;
 
   it('accepts a valid structured recipe payload', () => {
     expect(parseStructuredRecipe(validPayload)).toMatchObject({
       title: '대파제육볶음',
       baseServings: 2,
-    })
-  })
+    });
+  });
 
   it('rejects unexpected fields', () => {
     expect(() =>
@@ -50,6 +50,6 @@ describe('parseStructuredRecipe', () => {
         ...validPayload,
         extra: true,
       }),
-    ).toThrow()
-  })
-})
+    ).toThrow();
+  });
+});

@@ -33,7 +33,11 @@ export async function mockRecipeUpdate(page: Page, response?: object) {
     if (route.request().method() === 'PATCH') {
       return route.fulfill({
         status: 200,
-        json: response ?? { id: 'test-recipe-001', updated: true, updatedAt: new Date().toISOString() },
+        json: response ?? {
+          id: 'test-recipe-001',
+          updated: true,
+          updatedAt: new Date().toISOString(),
+        },
       });
     }
     return route.fallback();
@@ -51,7 +55,11 @@ export async function mockRecipeNotFound(page: Page) {
     if (route.request().method() === 'GET') {
       return route.fulfill({
         status: 404,
-        json: { error: '레시피를 찾을 수 없습니다.', code: 'RECIPE_NOT_FOUND', category: 'user_error' },
+        json: {
+          error: '레시피를 찾을 수 없습니다.',
+          code: 'RECIPE_NOT_FOUND',
+          category: 'user_error',
+        },
       });
     }
     return route.fallback();

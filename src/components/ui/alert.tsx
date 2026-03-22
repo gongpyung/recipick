@@ -16,7 +16,9 @@ function Alert({ className, ...props }: React.ComponentProps<'div'>) {
 }
 
 function AlertTitle({ className, ...props }: React.ComponentProps<'h5'>) {
-  return <h5 className={cn('mb-1 font-medium leading-none', className)} {...props} />;
+  return (
+    <h5 className={cn('mb-1 leading-none font-medium', className)} {...props} />
+  );
 }
 
 function AlertDescription({
@@ -24,7 +26,10 @@ function AlertDescription({
   ...props
 }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn('text-muted-foreground text-sm', className)} {...props} />
+    <div
+      className={cn('text-muted-foreground text-sm', className)}
+      {...props}
+    />
   );
 }
 

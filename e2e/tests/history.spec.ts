@@ -6,7 +6,9 @@ test.describe('히스토리 페이지', () => {
   test('레시피 목록이 표시된다', async ({ page }) => {
     await mockRecentRecipes(page, MOCK_RECENT_RECIPES);
     await page.goto('/history');
-    await expect(page.getByRole('heading', { name: '최근 레시피' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '최근 레시피' }),
+    ).toBeVisible();
     await expect(page.getByText('백종원 김치찌개')).toBeVisible();
     await expect(page.getByText('봄동비빔밥')).toBeVisible();
   });

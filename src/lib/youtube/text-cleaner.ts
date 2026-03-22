@@ -12,7 +12,10 @@ const URL_PATTERN = /https?:\/\/\S+|www\.\S+/gi;
 const HASHTAG_PATTERN = /(^|\s)#[^\s#]+/g;
 
 function normalizeWhitespace(value: string) {
-  return value.replace(/\r\n/g, '\n').replace(/[ \t]+/g, ' ').trim();
+  return value
+    .replace(/\r\n/g, '\n')
+    .replace(/[ \t]+/g, ' ')
+    .trim();
 }
 
 function removeTimestamps(value: string) {

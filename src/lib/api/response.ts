@@ -26,10 +26,7 @@ function inferGenericErrorCategory(status: number): ApiErrorCategory {
   return 'user_error';
 }
 
-function resolveErrorCategory(
-  code: string,
-  status: number,
-): ApiErrorCategory {
+function resolveErrorCategory(code: string, status: number): ApiErrorCategory {
   if (isExtractionErrorCode(code)) {
     return getExtractionErrorCategory(code);
   }
@@ -37,11 +34,7 @@ function resolveErrorCategory(
   return inferGenericErrorCategory(status);
 }
 
-export function errorResponse(
-  code: string,
-  message: string,
-  status: number,
-) {
+export function errorResponse(code: string, message: string, status: number) {
   return NextResponse.json<ApiErrorResponse>(
     {
       error: message,

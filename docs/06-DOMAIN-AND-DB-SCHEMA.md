@@ -1,7 +1,9 @@
 # 06. Domain and DB Schema
 
 ## 도메인 개요
+
 ### 핵심 엔터티
+
 - Video
 - Extraction
 - Recipe
@@ -12,6 +14,7 @@
 ---
 
 ## 엔터티 관계
+
 - 하나의 `Video`는 여러 `Extraction`을 가질 수 있다.
 - 하나의 `Extraction`은 하나의 `Recipe`를 생성한다.
 - 하나의 `Recipe`는 여러 `Ingredient`, `Step`, `Warning`을 가진다.
@@ -19,7 +22,9 @@
 ---
 
 ## 권장 테이블
+
 ### videos
+
 - `id`
 - `youtube_url`
 - `youtube_id`
@@ -32,6 +37,7 @@
 - `created_at`
 
 ### extractions
+
 - `id`
 - `video_id`
 - `status`
@@ -45,6 +51,7 @@
 - `updated_at`
 
 ### recipes
+
 - `id`
 - `video_id`
 - `extraction_id`
@@ -57,6 +64,7 @@
 - `updated_at`
 
 ### ingredients
+
 - `id`
 - `recipe_id`
 - `sort_order`
@@ -69,6 +77,7 @@
 - `confidence`
 
 ### steps
+
 - `id`
 - `recipe_id`
 - `step_no`
@@ -77,6 +86,7 @@
 - `confidence`
 
 ### warnings
+
 - `id`
 - `recipe_id`
 - `code`
@@ -86,6 +96,7 @@
 ---
 
 ## 권장 인덱스
+
 - `videos.youtube_id` unique
 - `extractions.video_id`
 - `recipes.video_id`
@@ -96,12 +107,16 @@
 ---
 
 ## 중복 처리 규칙
+
 ### 권고안
+
 같은 `youtube_id`가 다시 들어오면:
+
 - 기본은 **가장 최근 recipe 재사용**
 - 사용자가 `다시 추출`을 요청하면 새 extraction 생성
 
 이유:
+
 - 비용 절감
 - 같은 영상 반복 처리 방지
 - 사용자가 이미 수정한 결과 재사용 가능
@@ -109,17 +124,21 @@
 ---
 
 ## 저장 전략
+
 ### Phase 1
+
 - localStorage + 서버 없는 저장도 가능
 - 단, 도메인 모델은 DB 확장 가능하게 유지
 
 ### Phase 2
+
 - Postgres / Supabase 등으로 확장
 - 최근 결과, 수정본, 재추출 이력 관리
 
 ---
 
 ## 데이터 설계 메모
+
 - `raw_output_json`은 반드시 남기는 쪽이 좋다.
 - 디버깅, 품질 개선, prompt 개선에 매우 중요하다.
 - `is_user_edited`는 MVP에서도 유용하다.
@@ -127,6 +146,7 @@
 ---
 
 ## SQL 예시 (개략)
+
 ```sql
 create table recipes (
   id text primary key,

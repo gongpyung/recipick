@@ -1,9 +1,11 @@
 # Step 1: Foundation + Data Pipeline - Implementation Plan
 
 ## Overview
+
 YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL 파싱 + YouTube 메타데이터/자막 수집 + Supabase 저장까지 완료한다.
 
 ## Tech Stack
+
 - Framework: Next.js 15 + TypeScript + App Router
 - Styling: Tailwind CSS + shadcn/ui
 - Database: Supabase (Postgres) - Free tier
@@ -12,6 +14,7 @@ YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL �
 - LLM: Z.ai GLM coding plan (Step 1에서는 미연동, 환경변수만 정의)
 
 ## Confirmed Decisions
+
 - Storage: Supabase (not localStorage)
 - Progress tracking: Polling (not SSE)
 - Cache: Same videoId → reuse latest completed extraction (24h TTL)
@@ -26,11 +29,13 @@ YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL �
 ### Stage A: Bootstrap (Sequential, main branch)
 
 #### Task 1-1. Project Creation [S]
+
 - `npx create-next-app@latest --typescript --app --tailwind --src-dir --eslint`
 - Install shadcn/ui: `npx shadcn@latest init`
 - Verify: `npm run dev` → localhost:3000 accessible
 
 #### Task 1-2. Linting + Testing Setup [S]
+
 - ESLint config: Next.js defaults + `@typescript-eslint/recommended`
 - Prettier config: singleQuote, trailingComma, semi
 - Vitest: install and configure `vitest.config.ts`
@@ -38,7 +43,9 @@ YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL �
 - Verify: `npm run lint` + `npm test` pass with dummy test
 
 #### Task 1-3. Environment Variables + Validation [S]
+
 - Create `.env.example`:
+
   ```env
   # Supabase
   NEXT_PUBLIC_SUPABASE_URL=
@@ -53,6 +60,7 @@ YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL �
   ZAI_BASE_URL=https://api.z.ai/api/coding/paas/v4
   ZAI_MODEL=
   ```
+
 - Create `src/lib/env.ts`: Zod-based runtime validation
   - App must fail fast if required vars are missing
   - Required for Step 1: SUPABASE vars + YOUTUBE_API_KEY
@@ -71,7 +79,9 @@ YouTube Recipe AI의 기반 구축 단계. 프로젝트 부트스트랩 + URL �
 **Exclusive paths:** `src/lib/supabase/`, `src/lib/extraction/types.ts`, `supabase/`
 
 ##### Task 2-1. TypeScript Type Definitions [S]
+
 File: `src/lib/extraction/types.ts`
+
 ```typescript
 export type ExtractionStatus = 'queued' | 'processing' | 'completed' | 'failed';
 export type ExtractionStage =
@@ -111,12 +121,15 @@ export interface ExtractionRecord {
 ```
 
 ##### Task 2-2. Supabase Setup + Migration [M]
+
 File: `src/lib/supabase/client.ts`
+
 - Install `@supabase/supabase-js`
 - Server-side client using `SUPABASE_SERVICE_ROLE_KEY`
 - No client-side direct Supabase access (all through API routes)
 
 File: `supabase/migrations/001_initial_schema.sql`
+
 ```sql
 CREATE TABLE videos (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -154,6 +167,7 @@ CREATE INDEX idx_extractions_video_status ON extractions(video_id, status);
 ```
 
 File: `src/lib/supabase/types.ts`
+
 - DB row types (can be auto-generated via `supabase gen types typescript`)
 
 Verify: Tables created in Supabase Dashboard or via `supabase db push`
@@ -165,9 +179,11 @@ Verify: Tables created in Supabase Dashboard or via `supabase db push`
 **Exclusive paths:** `src/lib/youtube/`, `__tests__/lib/youtube/`
 
 ##### Task 3-1. URL Validator + Video ID Parser [S]
+
 File: `src/lib/youtube/url-parser.ts`
 
 Supported URL patterns:
+
 - `https://www.youtube.com/watch?v=VIDEO_ID`
 - `https://youtube.com/watch?v=VIDEO_ID`
 - `https://m.youtube.com/watch?v=VIDEO_ID`
@@ -178,6 +194,7 @@ Supported URL patterns:
 Additional query params (`&t=`, `&list=`, `&si=`) must be tolerated.
 
 Return type:
+
 ```typescript
 interface ParseResult {
   isValid: boolean;
@@ -190,11 +207,13 @@ interface ParseResult {
 YouTube video ID rules: 11 characters, alphanumeric + `-` + `_`
 
 Tests (`__tests__/lib/youtube/url-parser.test.ts`):
+
 - Valid cases: 6+ URL variations
 - Invalid cases: empty string, other domains, incomplete URL, missing videoId
 - Edge cases: extra params, http (insecure), www variations, mobile URLs
 
 ##### Task 3-2. YouTube Data API v3 Client [M]
+
 File: `src/lib/youtube/api-client.ts`
 
 Two main functions:
@@ -231,6 +250,7 @@ Two main functions:
    - If no captions available: return `null` (not an error, just a warning)
 
 Error handling:
+
 - API quota exceeded (403) → clear error message
 - Video not found (404) → upstream_error
 - Network timeout → retry once, then fail
@@ -238,9 +258,11 @@ Error handling:
 Tests: fixture-based unit tests (mocked API responses) + 1 manual smoke test with real URL
 
 ##### Task 3-3. Text Cleaner Module [M]
+
 File: `src/lib/youtube/text-cleaner.ts`
 
 Processing rules (from 04-AI-PROCESSING-SPEC):
+
 1. Remove timestamps (`[00:00]`, `0:00`, etc.)
 2. Remove duplicate text (common in auto-captions)
 3. Normalize excessive whitespace/newlines
@@ -248,6 +270,7 @@ Processing rules (from 04-AI-PROCESSING-SPEC):
 5. Combine description + caption text
 
 Return:
+
 ```typescript
 interface CleanedText {
   combinedText: string;
@@ -258,6 +281,7 @@ interface CleanedText {
 ```
 
 Tests:
+
 - Timestamp removal
 - Duplicate detection and removal
 - Whitespace normalization
@@ -271,7 +295,9 @@ Tests:
 **Exclusive paths:** `src/lib/api/`, `src/lib/extraction/errors.ts`
 
 ##### Task 4-1. Error Standardization Module [S]
+
 File: `src/lib/api/response.ts`
+
 ```typescript
 interface ApiErrorResponse {
   error: string;
@@ -279,11 +305,16 @@ interface ApiErrorResponse {
   category: 'user_error' | 'upstream_error' | 'internal_error';
 }
 
-function errorResponse(code: string, message: string, status: number): NextResponse
-function successResponse<T>(data: T, status?: number): NextResponse
+function errorResponse(
+  code: string,
+  message: string,
+  status: number,
+): NextResponse;
+function successResponse<T>(data: T, status?: number): NextResponse;
 ```
 
 File: `src/lib/extraction/errors.ts`
+
 ```typescript
 enum ExtractionErrorCode {
   INVALID_URL = 'INVALID_URL',
@@ -311,15 +342,21 @@ Tests: Error response format validation
 **Merge all 3 branches into main first.**
 
 ##### Task 4-2. Extraction Service [L]
+
 File: `src/lib/extraction/service.ts`
 
 Main orchestration logic:
+
 ```typescript
-async function createExtraction(youtubeUrl: string, options?: { forceReExtract?: boolean }): Promise<ExtractionResult>
-async function getExtraction(extractionId: string): Promise<ExtractionRecord>
+async function createExtraction(
+  youtubeUrl: string,
+  options?: { forceReExtract?: boolean },
+): Promise<ExtractionResult>;
+async function getExtraction(extractionId: string): Promise<ExtractionRecord>;
 ```
 
 `createExtraction` flow:
+
 1. Parse URL → validate → extract videoId
 2. Check cache: query `videos` by youtube_id → find latest completed extraction within 24h
    - If cached and not forceReExtract → return cached extractionId
@@ -339,18 +376,23 @@ Timeout guard: AbortController with 8s timeout on entire pipeline.
 On failure: update extraction status to `failed` with error_code and error_message.
 
 ##### Task 4-3. API Endpoints [M]
+
 File: `src/app/api/extractions/route.ts`
+
 - POST handler: parse body → call createExtraction → return 202
 - Frontend debounce recommendation: 2+ seconds between submissions
 
 File: `src/app/api/extractions/[id]/route.ts`
+
 - GET handler: call getExtraction → return status
 - 404 if extraction not found
 
 Response formats must match `docs/05-API-CONTRACT.md`.
 
 ##### Task 5-1. GitHub Actions CI [S]
+
 File: `.github/workflows/ci.yml`
+
 - Trigger: push / PR
 - Steps: `npm ci` → `npm run lint` → `npm run type-check` → `npm test`
 - Node.js 20.x
@@ -415,15 +457,16 @@ recipick/
 
 ## Conflict Prevention Rules
 
-| Track | Exclusive Paths | Never Touch |
-|-------|----------------|-------------|
-| Track 1 (DB) | `src/lib/supabase/`, `src/lib/extraction/types.ts`, `supabase/` | `src/lib/youtube/` |
-| Track 2 (YouTube) | `src/lib/youtube/`, `__tests__/lib/youtube/` | `src/lib/supabase/` |
-| Track 3 (Errors) | `src/lib/api/`, `src/lib/extraction/errors.ts` | `src/lib/youtube/`, `src/lib/supabase/` |
+| Track             | Exclusive Paths                                                 | Never Touch                             |
+| ----------------- | --------------------------------------------------------------- | --------------------------------------- |
+| Track 1 (DB)      | `src/lib/supabase/`, `src/lib/extraction/types.ts`, `supabase/` | `src/lib/youtube/`                      |
+| Track 2 (YouTube) | `src/lib/youtube/`, `__tests__/lib/youtube/`                    | `src/lib/supabase/`                     |
+| Track 3 (Errors)  | `src/lib/api/`, `src/lib/extraction/errors.ts`                  | `src/lib/youtube/`, `src/lib/supabase/` |
 
 Shared files (`package.json`, `tsconfig.json`): Track 1 only.
 
 ## Success Criteria
+
 - URL input → videoId parsing → metadata/caption collection → saved to Supabase videos table
 - Extraction job creation and status query API working
 - Error handling for unsupported/invalid URLs

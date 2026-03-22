@@ -35,18 +35,18 @@ const UNIT_ALIASES = new Map<string, string>([
   ['조금', '약간'],
   ['적당량', '약간'],
   ['pinch', '약간'],
-])
+]);
 
 export function normalizeUnit(unit: string | null | undefined) {
   if (!unit) {
-    return null
+    return null;
   }
 
-  const normalized = unit.trim().toLowerCase()
+  const normalized = unit.trim().toLowerCase();
 
   if (!normalized) {
-    return null
+    return null;
   }
 
-  return UNIT_ALIASES.get(normalized) ?? unit.trim()
+  return UNIT_ALIASES.get(normalized) ?? unit.trim();
 }

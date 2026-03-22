@@ -1,6 +1,6 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it } from 'vitest';
 
-import { normalizeStructuredRecipe } from '@/lib/extraction/normalizer'
+import { normalizeStructuredRecipe } from '@/lib/extraction/normalizer';
 
 describe('normalizeStructuredRecipe', () => {
   it('normalizes units, reorders steps, and adds missing servings warning', () => {
@@ -42,12 +42,16 @@ describe('normalizeStructuredRecipe', () => {
       tips: ['  뜨겁게 먹는다.  '],
       warnings: [],
       confidence: 'medium',
-    })
+    });
 
-    expect(result.title).toBe('파스타')
-    expect(result.summary).toBe('간단한 파스타')
-    expect(result.ingredients[0].unit).toBe('tbsp')
-    expect(result.steps.map((step) => step.stepNo)).toEqual([1, 2])
-    expect(result.warnings.some((warning) => warning.code === 'MISSING_BASE_SERVINGS')).toBe(true)
-  })
-})
+    expect(result.title).toBe('파스타');
+    expect(result.summary).toBe('간단한 파스타');
+    expect(result.ingredients[0].unit).toBe('tbsp');
+    expect(result.steps.map((step) => step.stepNo)).toEqual([1, 2]);
+    expect(
+      result.warnings.some(
+        (warning) => warning.code === 'MISSING_BASE_SERVINGS',
+      ),
+    ).toBe(true);
+  });
+});

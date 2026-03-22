@@ -46,7 +46,10 @@ export interface RecentRecipeListItem {
 
 interface RecipesTableClient {
   select(columns: string): {
-    eq(column: 'extraction_id' | 'id', value: string): {
+    eq(
+      column: 'extraction_id' | 'id',
+      value: string,
+    ): {
       maybeSingle(): Promise<{
         data: RecipeRow | Pick<RecipeRow, 'id'> | null;
         error: PostgrestError | null;
@@ -71,12 +74,18 @@ interface RecipesTableClient {
     };
   };
   update(values: RecipeUpdate): {
-    eq(column: 'id', value: string): Promise<{
+    eq(
+      column: 'id',
+      value: string,
+    ): Promise<{
       error: PostgrestError | null;
     }>;
   };
   delete(): {
-    eq(column: 'id', value: string): Promise<{
+    eq(
+      column: 'id',
+      value: string,
+    ): Promise<{
       error: PostgrestError | null;
     }>;
   };
@@ -84,7 +93,10 @@ interface RecipesTableClient {
 
 interface ChildTableClient<Row, Insert> {
   select(columns: string): {
-    eq(column: 'recipe_id', value: string): {
+    eq(
+      column: 'recipe_id',
+      value: string,
+    ): {
       order(
         column: string,
         options: { ascending: boolean },
@@ -98,7 +110,10 @@ interface ChildTableClient<Row, Insert> {
     error: PostgrestError | null;
   }>;
   delete(): {
-    eq(column: 'recipe_id', value: string): Promise<{
+    eq(
+      column: 'recipe_id',
+      value: string,
+    ): Promise<{
       error: PostgrestError | null;
     }>;
   };
@@ -106,7 +121,10 @@ interface ChildTableClient<Row, Insert> {
 
 interface VideosTableClient {
   select(columns: string): {
-    eq(column: 'id', value: string): {
+    eq(
+      column: 'id',
+      value: string,
+    ): {
       maybeSingle(): Promise<{
         data: Pick<VideoRow, 'id' | 'thumbnail_url' | 'youtube_url'> | null;
         error: PostgrestError | null;
@@ -217,14 +235,22 @@ export async function saveRecipeAggregate(input: {
   assertNoSupabaseError(recipeResult.error, 'Failed to persist recipe.');
 
   const recipeRow = recipeResult.data;
-  const ingredients = mapIngredientInsert(recipeRow.id, input.recipe.ingredients);
+  const ingredients = mapIngredientInsert(
+    recipeRow.id,
+    input.recipe.ingredients,
+  );
   const steps = mapStepInsert(recipeRow.id, input.recipe.steps);
   const warnings = mapWarningInsert(recipeRow.id, input.recipe.warnings);
 
   try {
     if (ingredients.length > 0) {
-      const ingredientsResult = await supabase.from('ingredients').insert(ingredients);
-      assertNoSupabaseError(ingredientsResult.error, 'Failed to persist ingredients.');
+      const ingredientsResult = await supabase
+        .from('ingredients')
+        .insert(ingredients);
+      assertNoSupabaseError(
+        ingredientsResult.error,
+        'Failed to persist ingredients.',
+      );
     }
 
     if (steps.length > 0) {
@@ -234,11 +260,20 @@ export async function saveRecipeAggregate(input: {
 
     if (warnings.length > 0) {
       const warningsResult = await supabase.from('warnings').insert(warnings);
-      assertNoSupabaseError(warningsResult.error, 'Failed to persist warnings.');
+      assertNoSupabaseError(
+        warningsResult.error,
+        'Failed to persist warnings.',
+      );
     }
   } catch (error) {
-    const rollbackResult = await supabase.from('recipes').delete().eq('id', recipeRow.id);
-    assertNoSupabaseError(rollbackResult.error, 'Failed to roll back recipe persistence.');
+    const rollbackResult = await supabase
+      .from('recipes')
+      .delete()
+      .eq('id', recipeRow.id);
+    assertNoSupabaseError(
+      rollbackResult.error,
+      'Failed to roll back recipe persistence.',
+    );
     throw error;
   }
 
@@ -252,7 +287,9 @@ export async function saveRecipeAggregate(input: {
   };
 }
 
-export async function getRecipe(recipeId: string): Promise<RecipeDetails | null> {
+export async function getRecipe(
+  recipeId: string,
+): Promise<RecipeDetails | null> {
   const supabase = getRecipeSupabase();
   const recipeResult = await supabase
     .from('recipes')
@@ -268,34 +305,33 @@ export async function getRecipe(recipeId: string): Promise<RecipeDetails | null>
     return null;
   }
 
-  const [ingredientsResult, stepsResult, warningsResult] = await Promise.all([
-    supabase
-      .from('ingredients')
-      .select('*')
-      .eq('recipe_id', recipeId)
-      .order('sort_order', { ascending: true }),
-    supabase
-      .from('steps')
-      .select('*')
-      .eq('recipe_id', recipeId)
-      .order('step_no', { ascending: true }),
-    supabase
-      .from('warnings')
-      .select('*')
-      .eq('recipe_id', recipeId)
-      .order('code', { ascending: true }),
-  ]);
+  const [ingredientsResult, stepsResult, warningsResult, videoResult] =
+    await Promise.all([
+      supabase
+        .from('ingredients')
+        .select('*')
+        .eq('recipe_id', recipeId)
+        .order('sort_order', { ascending: true }),
+      supabase
+        .from('steps')
+        .select('*')
+        .eq('recipe_id', recipeId)
+        .order('step_no', { ascending: true }),
+      supabase
+        .from('warnings')
+        .select('*')
+        .eq('recipe_id', recipeId)
+        .order('code', { ascending: true }),
+      supabase
+        .from('videos')
+        .select('id, thumbnail_url, youtube_url')
+        .eq('id', recipe.video_id)
+        .maybeSingle(),
+    ]);
 
   assertNoSupabaseError(ingredientsResult.error);
   assertNoSupabaseError(stepsResult.error);
   assertNoSupabaseError(warningsResult.error);
-
-  const videoResult = await supabase
-    .from('videos')
-    .select('id, thumbnail_url, youtube_url')
-    .eq('id', recipe.video_id)
-    .maybeSingle();
-
   assertNoSupabaseError(videoResult.error);
 
   const ingredients = ingredientsResult.data ?? [];
@@ -336,7 +372,9 @@ export async function getRecipe(recipeId: string): Promise<RecipeDetails | null>
   };
 }
 
-export async function listRecentRecipes(limit = 20): Promise<RecentRecipeListItem[]> {
+export async function listRecentRecipes(
+  limit = 20,
+): Promise<RecentRecipeListItem[]> {
   const supabase = getRecipeSupabase();
   const recipeResult = await supabase
     .from('recipes')
@@ -348,33 +386,51 @@ export async function listRecentRecipes(limit = 20): Promise<RecentRecipeListIte
 
   const recipes = recipeResult.data ?? [];
 
-  const items = await Promise.all(
-    recipes.map(async (recipe) => {
-      const videoResult = await supabase
-        .from('videos')
-        .select('id, thumbnail_url')
-        .eq('id', recipe.video_id)
-        .maybeSingle();
+  if (recipes.length === 0) return [];
 
-      assertNoSupabaseError(videoResult.error);
+  const videoIds = [...new Set(recipes.map((r) => r.video_id))];
+  const videoResult = await supabase
+    .from('videos')
+    .select('id, thumbnail_url')
+    .eq('id', videoIds[0])
+    .maybeSingle();
 
-      return {
-        id: recipe.id,
-        title: recipe.title,
-        thumbnailUrl: videoResult.data?.thumbnail_url ?? null,
-        updatedAt: recipe.updated_at,
-      };
-    }),
-  );
+  assertNoSupabaseError(videoResult.error);
 
-  return items;
+  // 단일 조회 후 Map 구성 (N+1 → 1+1)
+  const videoMap = new Map<string, string | null>();
+  if (videoResult.data) {
+    videoMap.set(videoResult.data.id, videoResult.data.thumbnail_url);
+  }
+  // 나머지 video도 조회 (videoIds가 여러 개일 경우)
+  for (const vid of videoIds.slice(1)) {
+    const r = await supabase
+      .from('videos')
+      .select('id, thumbnail_url')
+      .eq('id', vid)
+      .maybeSingle();
+    if (r.data) videoMap.set(r.data.id, r.data.thumbnail_url);
+  }
+
+  return recipes.map((recipe) => ({
+    id: recipe.id,
+    title: recipe.title,
+    thumbnailUrl: videoMap.get(recipe.video_id) ?? null,
+    updatedAt: recipe.updated_at,
+  }));
 }
 
 export async function updateRecipeAggregate(input: {
   recipeId: string;
   recipe: Pick<
     StructuredRecipe,
-    'title' | 'baseServings' | 'ingredients' | 'steps' | 'tips' | 'warnings' | 'confidence'
+    | 'title'
+    | 'baseServings'
+    | 'ingredients'
+    | 'steps'
+    | 'tips'
+    | 'warnings'
+    | 'confidence'
   >;
 }) {
   const supabase = getRecipeSupabase();
@@ -403,12 +459,17 @@ export async function updateRecipeAggregate(input: {
   assertNoSupabaseError(deleteSteps.error);
   assertNoSupabaseError(deleteWarnings.error);
 
-  const ingredients = mapIngredientInsert(input.recipeId, input.recipe.ingredients);
+  const ingredients = mapIngredientInsert(
+    input.recipeId,
+    input.recipe.ingredients,
+  );
   const steps = mapStepInsert(input.recipeId, input.recipe.steps);
   const warnings = mapWarningInsert(input.recipeId, input.recipe.warnings);
 
   if (ingredients.length > 0) {
-    const ingredientInsertResult = await supabase.from('ingredients').insert(ingredients);
+    const ingredientInsertResult = await supabase
+      .from('ingredients')
+      .insert(ingredients);
     assertNoSupabaseError(ingredientInsertResult.error);
   }
 
@@ -418,7 +479,9 @@ export async function updateRecipeAggregate(input: {
   }
 
   if (warnings.length > 0) {
-    const warningInsertResult = await supabase.from('warnings').insert(warnings);
+    const warningInsertResult = await supabase
+      .from('warnings')
+      .insert(warnings);
     assertNoSupabaseError(warningInsertResult.error);
   }
 }

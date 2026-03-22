@@ -66,7 +66,9 @@ export async function apiFetch<T>(
   });
 
   if (!response.ok) {
-    const payload = await parseJson<ApiErrorPayload>(response).catch(() => null);
+    const payload = await parseJson<ApiErrorPayload>(response).catch(
+      () => null,
+    );
 
     throw new ApiError(
       payload?.error ?? '요청 처리에 실패했습니다.',

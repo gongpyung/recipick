@@ -206,10 +206,18 @@ describe('api-client', () => {
       ),
     );
     fetchTranscriptMock
-      .mockRejectedValueOnce(new MockYoutubeTranscriptNotAvailableLanguageError())
-      .mockRejectedValueOnce(new MockYoutubeTranscriptNotAvailableLanguageError())
-      .mockRejectedValueOnce(new MockYoutubeTranscriptNotAvailableLanguageError())
-      .mockRejectedValueOnce(new MockYoutubeTranscriptNotAvailableLanguageError())
+      .mockRejectedValueOnce(
+        new MockYoutubeTranscriptNotAvailableLanguageError(),
+      )
+      .mockRejectedValueOnce(
+        new MockYoutubeTranscriptNotAvailableLanguageError(),
+      )
+      .mockRejectedValueOnce(
+        new MockYoutubeTranscriptNotAvailableLanguageError(),
+      )
+      .mockRejectedValueOnce(
+        new MockYoutubeTranscriptNotAvailableLanguageError(),
+      )
       .mockResolvedValueOnce([
         {
           text: 'Fallback caption text',
@@ -244,10 +252,13 @@ describe('api-client', () => {
 
   const manualSmokeTest = process.env.YOUTUBE_SMOKE_VIDEO_ID ? it : it.skip;
 
-  manualSmokeTest('runs a manual caption smoke test when configured', async () => {
-    const { fetchCaptions } = await loadApiClient();
-    const result = await fetchCaptions(process.env.YOUTUBE_SMOKE_VIDEO_ID!);
+  manualSmokeTest(
+    'runs a manual caption smoke test when configured',
+    async () => {
+      const { fetchCaptions } = await loadApiClient();
+      const result = await fetchCaptions(process.env.YOUTUBE_SMOKE_VIDEO_ID!);
 
-    expect(result).not.toBeNull();
-  });
+      expect(result).not.toBeNull();
+    },
+  );
 });

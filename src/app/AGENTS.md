@@ -40,6 +40,7 @@ app/
 **렌더링**: `export const dynamic = 'force-dynamic'` -- 서버 사이드 동적 렌더링 (최근 레시피 목록 때문).
 
 **구성**:
+
 1. Hero 섹션 (타이틀 + 설명)
 2. `<UrlInputForm />` -- URL 입력 폼 (클라이언트 컴포넌트)
 3. Feature Cards -- 3개 기능 소개 (정적)
@@ -51,6 +52,7 @@ app/
 **렌더링**: 서버 컴포넌트 (params await 후 클라이언트 컴포넌트에 id 전달)
 
 **params 패턴** (Next.js 15):
+
 ```typescript
 export default async function ExtractionPage({
   params,
@@ -86,6 +88,7 @@ export default async function ExtractionPage({
 ### `globals.css` -- 디자인 시스템
 
 Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
+
 - CSS 변수 (색상 팔레트, 폰트)
 - 유틸리티 클래스 (`hero-bg`, `card-culinary`, `tips-sage`, `warn-amber`, `badge-gold`)
 - 인쇄 스타일 (`no-print`, `print-full`)
@@ -100,11 +103,13 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 **파일**: `api/extractions/route.ts`
 
 **요청 바디**:
+
 ```json
 { "youtubeUrl": "https://...", "forceReExtract": false }
 ```
 
 **응답** (202):
+
 ```json
 { "extractionId": "uuid", "status": "queued" }
 ```
@@ -118,18 +123,26 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 **파일**: `api/extractions/[id]/route.ts`
 
 **응답 (진행 중)**:
+
 ```json
 { "extractionId": "uuid", "status": "processing", "stage": "structuring" }
 ```
 
 **응답 (완료)**:
+
 ```json
 { "extractionId": "uuid", "status": "completed", "recipeId": "uuid" }
 ```
 
 **응답 (실패)**:
+
 ```json
-{ "extractionId": "uuid", "status": "failed", "errorCode": "NON_RECIPE_VIDEO", "message": "..." }
+{
+  "extractionId": "uuid",
+  "status": "failed",
+  "errorCode": "NON_RECIPE_VIDEO",
+  "message": "..."
+}
 ```
 
 **주의**: `status === 'completed'`인데 `recipeId`가 없으면 `INTERNAL_ERROR` 반환 (데이터 불일치).
@@ -139,8 +152,13 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 **파일**: `api/recipes/route.ts`
 
 **응답**:
+
 ```json
-{ "items": [{ "id": "uuid", "title": "...", "thumbnailUrl": null, "updatedAt": "..." }] }
+{
+  "items": [
+    { "id": "uuid", "title": "...", "thumbnailUrl": null, "updatedAt": "..." }
+  ]
+}
 ```
 
 **제약**: `scope=recent` 외 값이면 400 에러.
@@ -156,6 +174,7 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 **파일**: `api/recipes/[id]/route.ts`
 
 **요청 바디**:
+
 ```json
 {
   "title": "...",
@@ -169,6 +188,7 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 ```
 
 **응답**:
+
 ```json
 { "id": "uuid", "updated": true, "updatedAt": "2026-..." }
 ```
@@ -180,13 +200,15 @@ Tailwind CSS v4 설정 + 커스텀 디자인 토큰:
 ## API 응답 패턴
 
 ### 성공
+
 ```typescript
-successResponse(data, status)  // 기본 200
+successResponse(data, status); // 기본 200
 ```
 
 ### 에러
+
 ```typescript
-errorResponse(code, message, status)
+errorResponse(code, message, status);
 // → { error: message, code: code, category: 'user_error' | 'upstream_error' | 'internal_error' }
 ```
 

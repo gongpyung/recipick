@@ -6,7 +6,7 @@ test.describe('반응형 테스트', () => {
     await page.goto('/');
     // md:hidden 적용 확인 - 하단 네비의 fixed 컨테이너
     const bottomNav = page.locator('.fixed.bottom-0').first();
-    if (await bottomNav.count() > 0) {
+    if ((await bottomNav.count()) > 0) {
       await expect(bottomNav).not.toBeVisible();
     }
   });
@@ -16,7 +16,7 @@ test.describe('반응형 테스트', () => {
     await page.goto('/');
     // 하단 네비의 "홈" 텍스트 확인
     const homeTab = page.locator('nav').last().getByText('홈');
-    if (await homeTab.count() > 0) {
+    if ((await homeTab.count()) > 0) {
       await expect(homeTab).toBeVisible();
     }
   });

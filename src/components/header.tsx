@@ -12,10 +12,7 @@ export function Header() {
   return (
     <header className="no-print sticky top-0 z-30 border-b border-[#f8bbd9]/30 bg-white/80 backdrop-blur-lg">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4">
-        <Link
-          href="/"
-          className="group flex items-center gap-3 cursor-pointer"
-        >
+        <Link href="/" className="group flex cursor-pointer items-center gap-3">
           {/* Logo icon */}
           <div className="relative">
             <div className="flex size-12 items-center justify-center rounded-2xl bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-lg shadow-[#f8bbd9]/30 transition-transform duration-200 group-hover:scale-105">
@@ -39,7 +36,7 @@ export function Header() {
           <Link
             href="/history"
             className={cn(
-              'flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200 cursor-pointer',
+              'flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition-all duration-200',
               pathname === '/history'
                 ? 'bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white shadow-md shadow-[#f8bbd9]/30'
                 : 'text-[#8b7b7b] hover:bg-[#fce4ec] hover:text-[#6b5b4f]',

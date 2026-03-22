@@ -22,11 +22,7 @@
     "source": {
       "type": "object",
       "additionalProperties": false,
-      "required": [
-        "youtubeUrl",
-        "videoId",
-        "sourceType"
-      ],
+      "required": ["youtubeUrl", "videoId", "sourceType"],
       "properties": {
         "youtubeUrl": {
           "type": "string",
@@ -38,31 +34,19 @@
         },
         "sourceType": {
           "type": "string",
-          "enum": [
-            "video",
-            "shorts"
-          ]
+          "enum": ["video", "shorts"]
         },
         "language": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     },
     "baseServings": {
-      "type": [
-        "number",
-        "null"
-      ],
+      "type": ["number", "null"],
       "minimum": 0.25
     },
     "summary": {
-      "type": [
-        "string",
-        "null"
-      ]
+      "type": ["string", "null"]
     },
     "ingredients": {
       "type": "array",
@@ -83,40 +67,24 @@
             "minLength": 1
           },
           "amount": {
-            "type": [
-              "number",
-              "null"
-            ],
+            "type": ["number", "null"],
             "minimum": 0
           },
           "amountText": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "unit": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "scalable": {
             "type": "boolean"
           },
           "note": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "confidence": {
             "type": "string",
-            "enum": [
-              "high",
-              "medium",
-              "low"
-            ]
+            "enum": ["high", "medium", "low"]
           }
         }
       }
@@ -127,11 +95,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "stepNo",
-          "text",
-          "confidence"
-        ],
+        "required": ["stepNo", "text", "confidence"],
         "properties": {
           "stepNo": {
             "type": "integer",
@@ -142,18 +106,11 @@
             "minLength": 1
           },
           "note": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": ["string", "null"]
           },
           "confidence": {
             "type": "string",
-            "enum": [
-              "high",
-              "medium",
-              "low"
-            ]
+            "enum": ["high", "medium", "low"]
           }
         }
       }
@@ -169,11 +126,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "code",
-          "message",
-          "severity"
-        ],
+        "required": ["code", "message", "severity"],
         "properties": {
           "code": {
             "type": "string",
@@ -194,22 +147,14 @@
           },
           "severity": {
             "type": "string",
-            "enum": [
-              "info",
-              "warning",
-              "error"
-            ]
+            "enum": ["info", "warning", "error"]
           }
         }
       }
     },
     "confidence": {
       "type": "string",
-      "enum": [
-        "high",
-        "medium",
-        "low"
-      ]
+      "enum": ["high", "medium", "low"]
     },
     "extractionMeta": {
       "type": "object",
@@ -219,27 +164,14 @@
           "type": "array",
           "items": {
             "type": "string",
-            "enum": [
-              "title",
-              "description",
-              "captions",
-              "asr",
-              "ocr",
-              "vision"
-            ]
+            "enum": ["title", "description", "captions", "asr", "ocr", "vision"]
           }
         },
         "model": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         },
         "extractorVersion": {
-          "type": [
-            "string",
-            "null"
-          ]
+          "type": ["string", "null"]
         }
       }
     }

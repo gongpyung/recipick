@@ -53,7 +53,7 @@ export default function RootLayout({
       lang="ko"
       className={`${gowunBatang.variable} ${jua.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col bg-background font-body text-foreground">
+      <body className="bg-background font-body text-foreground flex min-h-full flex-col">
         <Header />
         {children}
       </body>

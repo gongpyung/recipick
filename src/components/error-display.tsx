@@ -88,7 +88,7 @@ export function ErrorDisplay({
         <Button
           nativeButton={false}
           render={<Link href="/" />}
-          className="cursor-pointer bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white border-0 shadow-lg shadow-[#f8bbd9]/30"
+          className="cursor-pointer border-0 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white shadow-lg shadow-[#f8bbd9]/30"
         >
           <Home className="size-4" />
           홈으로 돌아가기

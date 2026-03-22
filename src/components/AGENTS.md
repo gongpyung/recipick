@@ -8,10 +8,10 @@
 
 ## 서버 컴포넌트 vs 클라이언트 컴포넌트
 
-| 컴포넌트 | 타입 | 이유 |
-|----------|------|------|
-| `recent-recipes.tsx` | **Server Component** | Supabase 직접 조회, SSR 렌더링 |
-| 그 외 모든 컴포넌트 | **Client Component** (`'use client'`) | SWR, useState, useRouter 등 사용 |
+| 컴포넌트             | 타입                                  | 이유                             |
+| -------------------- | ------------------------------------- | -------------------------------- |
+| `recent-recipes.tsx` | **Server Component**                  | Supabase 직접 조회, SSR 렌더링   |
+| 그 외 모든 컴포넌트  | **Client Component** (`'use client'`) | SWR, useState, useRouter 등 사용 |
 
 **중요**: `recent-recipes.tsx`는 유일한 서버 컴포넌트이며, `src/lib/recipe/service.ts`를 직접 import한다. 다른 컴포넌트들은 `src/lib/api/client.ts`를 통해 API 라우트를 호출한다.
 
@@ -24,12 +24,14 @@
 **역할**: 홈 페이지의 YouTube URL 입력 + 추출 요청 시작
 
 **핵심 동작**:
+
 1. 클라이언트 측에서 `parseYouTubeUrl()`로 URL 검증 (서버 요청 없이)
 2. 유효하면 `createExtraction()` API 호출
 3. 성공 시 `router.push(/extractions/${id})` 리다이렉트
 4. 클립보드에 YouTube URL이 있으면 "붙여넣기" 제안 표시
 
 **상태**:
+
 - `value`: 입력값
 - `error`: 에러 메시지 (null이면 숨김)
 - `isSubmitting`: 제출 중 로딩 상태
@@ -40,12 +42,14 @@
 **역할**: 6단계 추출 파이프라인 진행 상태를 타임라인으로 표시
 
 **핵심 동작**:
+
 1. SWR로 `/api/extractions/${id}` 폴링 (2초 간격)
 2. `status`가 `completed`이면 자동으로 `/recipes/${recipeId}`로 리다이렉트
 3. `status`가 `failed`이면 `ErrorDisplay` 표시
 4. 진행 중이면 현재 단계에 스피너, 완료 단계에 체크, 미진행 단계에 아이콘 표시
 
 **6단계 정의**:
+
 ```
 validating_url → fetching_metadata → fetching_captions → structuring → normalizing → saving
 ```
@@ -57,6 +61,7 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 **역할**: 추출된 레시피의 전체 화면 (재료, 조리 순서, 팁, 경고, 액션 버튼)
 
 **핵심 기능**:
+
 - SWR로 레시피 데이터 로드
 - 인분 조절 (`ServingControl` 연동, `scaleIngredient()` 호출)
 - 편집 모드 전환 (`RecipeEditForm` 표시)
@@ -64,6 +69,7 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 - 원본 YouTube 영상 링크
 
 **내부 컴포넌트**:
+
 - `ConfidenceBadge`: confidence가 `high`가 아닌 항목에 뱃지 표시
 - `SeverityIcon`: 경고 심각도별 아이콘 (error/warning/info)
 
@@ -74,6 +80,7 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 **역할**: 레시피 제목, 인분, 재료, 단계, 팁을 편집하고 저장
 
 **핵심 동작**:
+
 1. `initialData`로 폼 초기화
 2. 재료/단계를 동적 추가/삭제 가능
 3. 저장 시 `updateRecipe()` API 호출
@@ -87,6 +94,7 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 **역할**: 인분 수 +/- 버튼과 현재 인분 표시
 
 **규칙**:
+
 - `baseServings === null`이면 "인분 정보 없음" 안내 카드 표시 (조절 불가)
 - 최소 1인분, 최대 20인분
 - 현재 인분은 그라데이션 박스로 강조
@@ -123,6 +131,7 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 ### `header.tsx` -- 앱 헤더
 
 **역할**: sticky 헤더 (로고 + "최근 레시피" 네비게이션 링크)
+
 - 현재 경로에 따라 활성 링크 스타일 변경
 - 블러 배경 (`backdrop-blur-lg`)
 
@@ -145,18 +154,18 @@ validating_url → fetching_metadata → fetching_captions → structuring → n
 
 shadcn/ui v4에서 생성된 공통 UI 컴포넌트. `@base-ui/react` 기반.
 
-| 파일 | 설명 |
-|------|------|
-| `alert.tsx` | 알림 박스 |
-| `badge.tsx` | 뱃지 |
-| `button.tsx` | 버튼 (variant: default, ghost, outline + nativeButton/render 지원) |
-| `card.tsx` | 카드 컨테이너 |
-| `dialog.tsx` | 다이얼로그/모달 |
-| `input.tsx` | 텍스트 입력 |
-| `label.tsx` | 라벨 |
-| `separator.tsx` | 구분선 |
-| `skeleton.tsx` | 스켈레톤 로더 |
-| `textarea.tsx` | 텍스트 영역 |
+| 파일            | 설명                                                               |
+| --------------- | ------------------------------------------------------------------ |
+| `alert.tsx`     | 알림 박스                                                          |
+| `badge.tsx`     | 뱃지                                                               |
+| `button.tsx`    | 버튼 (variant: default, ghost, outline + nativeButton/render 지원) |
+| `card.tsx`      | 카드 컨테이너                                                      |
+| `dialog.tsx`    | 다이얼로그/모달                                                    |
+| `input.tsx`     | 텍스트 입력                                                        |
+| `label.tsx`     | 라벨                                                               |
+| `separator.tsx` | 구분선                                                             |
+| `skeleton.tsx`  | 스켈레톤 로더                                                      |
+| `textarea.tsx`  | 텍스트 영역                                                        |
 
 **주의**: shadcn/ui v4는 `@base-ui/react` 기반으로, v3까지의 Radix UI와 다르다. Button 컴포넌트에 `nativeButton` prop과 `render` prop이 있으며, Radix의 `asChild`와 다른 패턴.
 
@@ -175,10 +184,11 @@ shadcn/ui v4에서 생성된 공통 UI 컴포넌트. `@base-ui/react` 기반.
 ### 카드 레이아웃 패턴
 
 모든 주요 카드는 "장식적 겹침 카드" 패턴을 사용:
+
 ```jsx
 <div className="relative">
-  <div className="absolute -top-1 left-2 right-2 h-full bg-[색상]/30 rounded-3xl" />
-  <div className="relative bg-white rounded-3xl p-5 shadow-xl border border-[색상]/30">
+  <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[색상]/30" />
+  <div className="relative rounded-3xl border border-[색상]/30 bg-white p-5 shadow-xl">
     {/* 실제 내용 */}
   </div>
 </div>

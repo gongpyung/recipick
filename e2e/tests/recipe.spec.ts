@@ -6,7 +6,9 @@ test.describe('레시피 결과 페이지', () => {
   test('레시피 제목과 재료가 표시된다', async ({ page }) => {
     await mockRecipeDetail(page, MOCK_RECIPE);
     await page.goto('/recipes/test-recipe-001');
-    await expect(page.getByRole('heading', { name: '백종원 김치찌개' })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '백종원 김치찌개' }),
+    ).toBeVisible();
     await expect(page.getByText('김치', { exact: true })).toBeVisible();
     await expect(page.getByText('돼지고기', { exact: true })).toBeVisible();
     await expect(page.getByText('두부', { exact: true })).toBeVisible();
@@ -23,7 +25,10 @@ test.describe('레시피 결과 페이지', () => {
     await mockRecipeDetail(page, MOCK_RECIPE);
     await page.goto('/recipes/test-recipe-001');
     // 기본 2인분 → + 클릭 → 3인분
-    const plusButton = page.locator('button').filter({ has: page.locator('svg.lucide-plus') }).first();
+    const plusButton = page
+      .locator('button')
+      .filter({ has: page.locator('svg.lucide-plus') })
+      .first();
     await plusButton.click();
     // 3인분이면 김치 300g → 450g
     await expect(page.getByText('450')).toBeVisible();
@@ -32,7 +37,10 @@ test.describe('레시피 결과 페이지', () => {
   test('인분 - 버튼으로 재료량이 변경된다', async ({ page }) => {
     await mockRecipeDetail(page, MOCK_RECIPE);
     await page.goto('/recipes/test-recipe-001');
-    const minusButton = page.locator('button').filter({ has: page.locator('svg.lucide-minus') }).first();
+    const minusButton = page
+      .locator('button')
+      .filter({ has: page.locator('svg.lucide-minus') })
+      .first();
     await minusButton.click();
     // 2인분 → 1인분: 김치 300g → 150g
     await expect(page.getByText('150')).toBeVisible();

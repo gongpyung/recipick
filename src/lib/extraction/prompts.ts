@@ -1,19 +1,19 @@
-import type { SourceUsage, VideoSourceType } from '@/lib/extraction/types'
+import type { SourceUsage, VideoSourceType } from '@/lib/extraction/types';
 
 export interface PromptSourceInput {
-  youtubeUrl: string
-  videoId: string
-  sourceType: VideoSourceType
-  language: string | null
-  title: string
-  descriptionText: string
-  captionText: string | null
-  combinedText: string
-  usedSources: SourceUsage[]
+  youtubeUrl: string;
+  videoId: string;
+  sourceType: VideoSourceType;
+  language: string | null;
+  title: string;
+  descriptionText: string;
+  captionText: string | null;
+  combinedText: string;
+  usedSources: SourceUsage[];
 }
 
 function formatOptionalBlock(label: string, value: string | null) {
-  return value ? `${label}:\n${value}` : `${label}:\n(none)`
+  return value ? `${label}:\n${value}` : `${label}:\n(none)`;
 }
 
 export function buildExtractionMessages(input: PromptSourceInput) {
@@ -36,7 +36,7 @@ export function buildExtractionMessages(input: PromptSourceInput) {
     '  "confidence": "high" | "medium" | "low",',
     '  "extractionMeta": { "usedSources": ("title" | "description" | "captions" | "asr" | "ocr" | "vision")[], "model": string | null, "extractorVersion": string | null }',
     '}',
-  ].join('\n')
+  ].join('\n');
 
   const userPrompt = [
     'Extract one structured cooking recipe from the following YouTube source.',
@@ -54,25 +54,25 @@ export function buildExtractionMessages(input: PromptSourceInput) {
     '',
     'combined_cleaned_text:',
     input.combinedText,
-  ].join('\n')
+  ].join('\n');
 
   return [
     { role: 'system' as const, content: systemPrompt },
     { role: 'user' as const, content: userPrompt },
-  ]
+  ];
 }
 
 export function buildRepairMessages(input: {
-  source: PromptSourceInput
-  previousIssues: string[]
-  previousOutput: string
+  source: PromptSourceInput;
+  previousIssues: string[];
+  previousOutput: string;
 }) {
   const systemPrompt = [
     'Repair the previous recipe JSON so it satisfies the exact schema.',
     'Return JSON only.',
     'Do not add fields outside the schema.',
     'Do not invent unsupported facts.',
-  ].join('\n')
+  ].join('\n');
 
   const userPrompt = [
     'The previous JSON failed validation. Fix it using the same source text.',
@@ -91,10 +91,10 @@ export function buildRepairMessages(input: {
     '',
     'combined_cleaned_text:',
     input.source.combinedText,
-  ].join('\n')
+  ].join('\n');
 
   return [
     { role: 'system' as const, content: systemPrompt },
     { role: 'user' as const, content: userPrompt },
-  ]
+  ];
 }

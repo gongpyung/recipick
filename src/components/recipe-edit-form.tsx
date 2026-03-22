@@ -1,7 +1,16 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { ChefHat, Lightbulb, LoaderCircle, Plus, Save, ShoppingBasket, Trash2, X } from 'lucide-react';
+import {
+  ChefHat,
+  Lightbulb,
+  LoaderCircle,
+  Plus,
+  Save,
+  ShoppingBasket,
+  Trash2,
+  X,
+} from 'lucide-react';
 
 import type {
   RecipeConfidence,
@@ -220,21 +229,27 @@ export function RecipeEditForm({
     <div className="space-y-6">
       {/* Title */}
       <div className="mb-5">
-        <Label htmlFor="edit-title" className="text-xs text-[#8b7b7b] mb-1.5 block">
+        <Label
+          htmlFor="edit-title"
+          className="mb-1.5 block text-xs text-[#8b7b7b]"
+        >
           레시피 제목
         </Label>
         <Input
           id="edit-title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="w-full text-xl font-semibold text-[#4a4a4a] bg-[#fef7f9] rounded-2xl px-4 py-3 border-2 border-transparent focus:border-[#f8bbd9] focus:outline-none transition-colors"
+          className="w-full rounded-2xl border-2 border-transparent bg-[#fef7f9] px-4 py-3 text-xl font-semibold text-[#4a4a4a] transition-colors focus:border-[#f8bbd9] focus:outline-none"
           placeholder="레시피 제목을 입력하세요"
         />
       </div>
 
       {/* Servings */}
       <div className="mb-5">
-        <Label htmlFor="edit-servings" className="text-xs text-[#8b7b7b] mb-1.5 block">
+        <Label
+          htmlFor="edit-servings"
+          className="mb-1.5 block text-xs text-[#8b7b7b]"
+        >
           기본 인분
         </Label>
         <div className="flex items-center gap-2">
@@ -246,7 +261,7 @@ export function RecipeEditForm({
             value={baseServings}
             onChange={(e) => setBaseServings(e.target.value)}
             placeholder="인분 수"
-            className="w-20 text-center text-lg font-medium text-[#4a4a4a] bg-[#fef7f9] rounded-2xl px-3 py-2 border-2 border-transparent focus:border-[#f8bbd9] focus:outline-none transition-colors"
+            className="w-20 rounded-2xl border-2 border-transparent bg-[#fef7f9] px-3 py-2 text-center text-lg font-medium text-[#4a4a4a] transition-colors focus:border-[#f8bbd9] focus:outline-none"
           />
           <span className="text-sm text-[#8b7b7b]">인분</span>
         </div>
@@ -254,34 +269,36 @@ export function RecipeEditForm({
 
       {/* Ingredients section */}
       <div className="relative">
-        <div className="absolute -top-1 left-2 right-2 h-full bg-[#c8e6c9]/40 rounded-3xl" />
-        <div className="relative bg-white rounded-3xl p-4 shadow-xl shadow-[#c8e6c9]/20 border border-[#c8e6c9]/30">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-[#c8e6c9] rounded-xl flex items-center justify-center">
-              <ShoppingBasket className="w-4 h-4 text-[#2e5f30]" />
+        <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#c8e6c9]/40" />
+        <div className="relative rounded-3xl border border-[#c8e6c9]/30 bg-white p-4 shadow-xl shadow-[#c8e6c9]/20">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#c8e6c9]">
+              <ShoppingBasket className="h-4 w-4 text-[#2e5f30]" />
             </div>
             <h3 className="text-base font-semibold text-[#6b5b4f]">재료</h3>
-            <span className="text-xs text-[#8b7b7b] ml-auto">{ingredients.length}가지</span>
+            <span className="ml-auto text-xs text-[#8b7b7b]">
+              {ingredients.length}가지
+            </span>
           </div>
 
           <div className="space-y-2">
             {ingredients.map((ingredient, index) => (
               <div
                 key={ingredient._editId}
-                className={`p-3 rounded-2xl ${index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-white border border-[#f8bbd9]/20'}`}
+                className={`rounded-2xl p-3 ${index % 2 === 0 ? 'bg-[#fef7f9]' : 'border border-[#f8bbd9]/20 bg-white'}`}
               >
                 <div className="flex items-start gap-2">
-                  <span className="w-6 h-6 bg-[#f8bbd9]/50 rounded-lg flex items-center justify-center text-xs text-[#e8a4b8] flex-shrink-0 mt-1">
+                  <span className="mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
                     {index + 1}
                   </span>
-                  <div className="flex-1 grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid flex-1 grid-cols-2 gap-2 sm:grid-cols-4">
                     <Input
                       placeholder="재료명"
                       value={ingredient.name}
                       onChange={(e) =>
                         updateIngredient(index, { name: e.target.value })
                       }
-                      className="col-span-2 sm:col-span-1 text-sm text-[#4a4a4a] bg-white rounded-xl px-3 py-2 border border-[#f8bbd9]/30 focus:border-[#f8bbd9] focus:outline-none"
+                      className="col-span-2 rounded-xl border border-[#f8bbd9]/30 bg-white px-3 py-2 text-sm text-[#4a4a4a] focus:border-[#f8bbd9] focus:outline-none sm:col-span-1"
                     />
                     <Input
                       placeholder="수량"
@@ -290,26 +307,32 @@ export function RecipeEditForm({
                       value={ingredient.amount?.toString() ?? ''}
                       onChange={(e) =>
                         updateIngredient(index, {
-                          amount: e.target.value ? Number(e.target.value) : null,
+                          amount: e.target.value
+                            ? Number(e.target.value)
+                            : null,
                         })
                       }
-                      className="text-sm text-[#4a4a4a] bg-white rounded-xl px-3 py-2 border border-[#f8bbd9]/30 focus:border-[#f8bbd9] focus:outline-none"
+                      className="rounded-xl border border-[#f8bbd9]/30 bg-white px-3 py-2 text-sm text-[#4a4a4a] focus:border-[#f8bbd9] focus:outline-none"
                     />
                     <Input
                       placeholder="단위"
                       value={ingredient.unit ?? ''}
                       onChange={(e) =>
-                        updateIngredient(index, { unit: e.target.value || null })
+                        updateIngredient(index, {
+                          unit: e.target.value || null,
+                        })
                       }
-                      className="text-sm text-[#4a4a4a] bg-white rounded-xl px-3 py-2 border border-[#f8bbd9]/30 focus:border-[#f8bbd9] focus:outline-none"
+                      className="rounded-xl border border-[#f8bbd9]/30 bg-white px-3 py-2 text-sm text-[#4a4a4a] focus:border-[#f8bbd9] focus:outline-none"
                     />
                     <Input
                       placeholder="메모 (선택)"
                       value={ingredient.note ?? ''}
                       onChange={(e) =>
-                        updateIngredient(index, { note: e.target.value || null })
+                        updateIngredient(index, {
+                          note: e.target.value || null,
+                        })
                       }
-                      className="col-span-2 sm:col-span-1 text-sm text-[#8b7b7b] bg-white rounded-xl px-3 py-2 border border-[#f8bbd9]/30 focus:border-[#f8bbd9] focus:outline-none"
+                      className="col-span-2 rounded-xl border border-[#f8bbd9]/30 bg-white px-3 py-2 text-sm text-[#8b7b7b] focus:border-[#f8bbd9] focus:outline-none sm:col-span-1"
                     />
                   </div>
                   <Button
@@ -317,9 +340,9 @@ export function RecipeEditForm({
                     variant="ghost"
                     size="icon"
                     onClick={() => removeIngredient(index)}
-                    className="w-8 h-8 bg-[#ffcdd2]/50 rounded-xl flex items-center justify-center hover:bg-[#ffcdd2] transition-colors flex-shrink-0"
+                    className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#ffcdd2]/50 transition-colors hover:bg-[#ffcdd2]"
                   >
-                    <Trash2 className="w-4 h-4 text-[#e53935]" />
+                    <Trash2 className="h-4 w-4 text-[#e53935]" />
                   </Button>
                 </div>
               </div>
@@ -329,9 +352,9 @@ export function RecipeEditForm({
           <button
             type="button"
             onClick={addIngredient}
-            className="w-full mt-3 py-3 bg-[#c8e6c9]/30 hover:bg-[#c8e6c9]/50 rounded-2xl flex items-center justify-center gap-2 text-sm text-[#2e5f30] transition-colors cursor-pointer"
+            className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#c8e6c9]/30 py-3 text-sm text-[#2e5f30] transition-colors hover:bg-[#c8e6c9]/50"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
             재료 추가
           </button>
         </div>
@@ -339,32 +362,38 @@ export function RecipeEditForm({
 
       {/* Steps section */}
       <div className="relative">
-        <div className="absolute -top-1 left-2 right-2 h-full bg-[#f8bbd9]/40 rounded-3xl" />
-        <div className="relative bg-white rounded-3xl p-4 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="w-8 h-8 bg-[#f8bbd9] rounded-xl flex items-center justify-center">
-              <ChefHat className="w-4 h-4 text-[#ad1457]" />
+        <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#f8bbd9]/40" />
+        <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-4 shadow-xl shadow-[#f8bbd9]/20">
+          <div className="mb-4 flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#f8bbd9]">
+              <ChefHat className="h-4 w-4 text-[#ad1457]" />
             </div>
-            <h3 className="text-base font-semibold text-[#6b5b4f]">조리 순서</h3>
-            <span className="text-xs text-[#8b7b7b] ml-auto">{steps.length}단계</span>
+            <h3 className="text-base font-semibold text-[#6b5b4f]">
+              조리 순서
+            </h3>
+            <span className="ml-auto text-xs text-[#8b7b7b]">
+              {steps.length}단계
+            </span>
           </div>
 
           <div className="relative">
-            <div className="absolute left-4 top-6 bottom-16 w-0.5 bg-gradient-to-b from-[#f8bbd9] via-[#e8a4b8] to-[#f8bbd9]" />
+            <div className="absolute top-6 bottom-16 left-4 w-0.5 bg-gradient-to-b from-[#f8bbd9] via-[#e8a4b8] to-[#f8bbd9]" />
 
             <div className="space-y-4">
               {steps.map((step, index) => (
-                <div key={step._editId} className="flex gap-4 relative">
-                  <div className="relative z-10 w-8 h-8 bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] rounded-full flex items-center justify-center shadow-md flex-shrink-0">
-                    <span className="text-sm font-bold text-white">{index + 1}</span>
+                <div key={step._editId} className="relative flex gap-4">
+                  <div className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-md">
+                    <span className="text-sm font-bold text-white">
+                      {index + 1}
+                    </span>
                   </div>
-                  <div className="flex-1 flex gap-2">
+                  <div className="flex flex-1 gap-2">
                     <Textarea
                       value={step.text}
                       onChange={(e) => updateStep(index, e.target.value)}
                       placeholder={`${index + 1}단계 내용을 입력하세요`}
                       rows={2}
-                      className={`flex-1 text-sm text-[#4a4a4a] leading-relaxed p-3 rounded-2xl resize-none border border-[#f8bbd9]/30 focus:border-[#f8bbd9] focus:outline-none ${
+                      className={`flex-1 resize-none rounded-2xl border border-[#f8bbd9]/30 p-3 text-sm leading-relaxed text-[#4a4a4a] focus:border-[#f8bbd9] focus:outline-none ${
                         index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-[#fce4ec]/30'
                       }`}
                     />
@@ -373,9 +402,9 @@ export function RecipeEditForm({
                       variant="ghost"
                       size="icon"
                       onClick={() => removeStep(index)}
-                      className="w-8 h-8 bg-[#ffcdd2]/50 rounded-xl flex items-center justify-center hover:bg-[#ffcdd2] transition-colors flex-shrink-0"
+                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#ffcdd2]/50 transition-colors hover:bg-[#ffcdd2]"
                     >
-                      <Trash2 className="w-4 h-4 text-[#e53935]" />
+                      <Trash2 className="h-4 w-4 text-[#e53935]" />
                     </Button>
                   </div>
                 </div>
@@ -386,9 +415,9 @@ export function RecipeEditForm({
           <button
             type="button"
             onClick={addStep}
-            className="w-full mt-4 py-3 bg-[#f8bbd9]/30 hover:bg-[#f8bbd9]/50 rounded-2xl flex items-center justify-center gap-2 text-sm text-[#ad1457] transition-colors cursor-pointer"
+            className="mt-4 flex w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#f8bbd9]/30 py-3 text-sm text-[#ad1457] transition-colors hover:bg-[#f8bbd9]/50"
           >
-            <Plus className="w-4 h-4" />
+            <Plus className="h-4 w-4" />
             단계 추가
           </button>
         </div>
@@ -396,11 +425,11 @@ export function RecipeEditForm({
 
       {/* Tips section */}
       <div className="relative">
-        <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#a5d6a7]/30 rounded-2xl" />
-        <div className="relative bg-[#e8f5e9] rounded-2xl p-4 shadow-lg shadow-[#c8e6c9]/20 border border-[#c8e6c9]/50">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-7 h-7 bg-[#c8e6c9] rounded-xl flex items-center justify-center">
-              <Lightbulb className="w-4 h-4 text-[#2e5f30]" />
+        <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#a5d6a7]/30" />
+        <div className="relative rounded-2xl border border-[#c8e6c9]/50 bg-[#e8f5e9] p-4 shadow-lg shadow-[#c8e6c9]/20">
+          <div className="mb-3 flex items-center gap-2">
+            <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#c8e6c9]">
+              <Lightbulb className="h-4 w-4 text-[#2e5f30]" />
             </div>
             <h3 className="text-sm font-semibold text-[#2e5f30]">요리 팁</h3>
           </div>
@@ -408,23 +437,23 @@ export function RecipeEditForm({
           <div className="space-y-2">
             {tips.map((tip, index) => (
               <div key={tip._editId} className="flex items-start gap-2">
-                <span className="w-5 h-5 bg-[#c8e6c9] rounded-lg flex items-center justify-center text-xs text-[#2e5f30] flex-shrink-0 mt-1">
+                <span className="mt-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-lg bg-[#c8e6c9] text-xs text-[#2e5f30]">
                   {index + 1}
                 </span>
                 <Input
                   placeholder="요리 팁을 입력하세요"
                   value={tip.value}
                   onChange={(e) => updateTip(index, e.target.value)}
-                  className="flex-1 text-sm text-[#4a4a4a] bg-white rounded-xl px-3 py-2 border border-[#c8e6c9]/50 focus:border-[#c8e6c9] focus:outline-none"
+                  className="flex-1 rounded-xl border border-[#c8e6c9]/50 bg-white px-3 py-2 text-sm text-[#4a4a4a] focus:border-[#c8e6c9] focus:outline-none"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
                   onClick={() => removeTip(index)}
-                  className="w-8 h-8 bg-[#ffcdd2]/50 rounded-xl flex items-center justify-center hover:bg-[#ffcdd2] transition-colors flex-shrink-0"
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl bg-[#ffcdd2]/50 transition-colors hover:bg-[#ffcdd2]"
                 >
-                  <Trash2 className="w-4 h-4 text-[#e53935]" />
+                  <Trash2 className="h-4 w-4 text-[#e53935]" />
                 </Button>
               </div>
             ))}
@@ -433,10 +462,9 @@ export function RecipeEditForm({
           <button
             type="button"
             onClick={addTip}
-            className="w-full mt-3 py-2.5 bg-[#c8e6c9]/50 hover:bg-[#c8e6c9]/70 rounded-xl flex items-center justify-center gap-2 text-sm text-[#2e5f30] transition-colors cursor-pointer"
+            className="mt-3 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[#c8e6c9]/50 py-2.5 text-sm text-[#2e5f30] transition-colors hover:bg-[#c8e6c9]/70"
           >
-            <Plus className="w-4 h-4" />
-            팁 추가
+            <Plus className="h-4 w-4" />팁 추가
           </button>
         </div>
       </div>
@@ -454,16 +482,16 @@ export function RecipeEditForm({
           variant="outline"
           onClick={handleCancel}
           disabled={isSaving}
-          className="flex-1 py-4 bg-white rounded-2xl flex items-center justify-center gap-2 text-sm font-medium text-[#6b5b4f] border-2 border-[#f8bbd9] hover:bg-[#fef7f9] transition-colors shadow-md cursor-pointer"
+          className="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl border-2 border-[#f8bbd9] bg-white py-4 text-sm font-medium text-[#6b5b4f] shadow-md transition-colors hover:bg-[#fef7f9]"
         >
-          <X className="w-4 h-4" />
+          <X className="h-4 w-4" />
           취소
         </Button>
         <Button
           type="button"
           onClick={handleSave}
           disabled={isSaving}
-          className="flex-[2] py-4 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] rounded-2xl flex items-center justify-center gap-2 text-sm font-medium text-white shadow-lg shadow-[#f8bbd9]/40 hover:opacity-90 transition-opacity border-0 cursor-pointer"
+          className="flex flex-[2] cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] py-4 text-sm font-medium text-white shadow-lg shadow-[#f8bbd9]/40 transition-opacity hover:opacity-90"
         >
           {isSaving ? (
             <>
@@ -472,7 +500,7 @@ export function RecipeEditForm({
             </>
           ) : (
             <>
-              <Save className="w-4 h-4" />
+              <Save className="h-4 w-4" />
               저장하기
             </>
           )}
@@ -502,7 +530,7 @@ export function RecipeEditForm({
                 setConfirmOpen(false);
                 onCancel();
               }}
-              className="bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white border-0"
+              className="border-0 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white"
             >
               변경 사항 버리기
             </Button>

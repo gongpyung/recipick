@@ -24,7 +24,13 @@ test.describe('추출 진행 페이지', () => {
   test('추출 실패 시 에러 메시지 표시', async ({ page }) => {
     await mockExtractionPolling(page, [EXTRACTION_FAILED]);
     await page.goto('/extractions/ext-002');
-    await expect(page.getByRole('heading', { name: '레시피 영상이 아닙니다' })).toBeVisible();
-    await expect(page.getByRole('button', { name: '홈으로 돌아가기' }).or(page.getByRole('link', { name: '홈으로 돌아가기' }))).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: '레시피 영상이 아닙니다' }),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole('button', { name: '홈으로 돌아가기' })
+        .or(page.getByRole('link', { name: '홈으로 돌아가기' })),
+    ).toBeVisible();
   });
 });

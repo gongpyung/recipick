@@ -54,12 +54,12 @@ describe('parseYouTubeUrl', () => {
   });
 
   it('rejects insecure http URLs and malformed ids', () => {
-    expect(parseYouTubeUrl('http://www.youtube.com/watch?v=dQw4w9WgXcQ')).toEqual(
-      {
-        isValid: false,
-        error: 'Only HTTPS YouTube URLs are supported.',
-      },
-    );
+    expect(
+      parseYouTubeUrl('http://www.youtube.com/watch?v=dQw4w9WgXcQ'),
+    ).toEqual({
+      isValid: false,
+      error: 'Only HTTPS YouTube URLs are supported.',
+    });
 
     expect(parseYouTubeUrl('https://youtu.be/not-valid')).toEqual({
       isValid: false,

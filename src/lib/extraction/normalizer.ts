@@ -60,7 +60,9 @@ export function normalizeStructuredRecipe(
 
   if (
     recipe.baseServings === null &&
-    !normalizedWarnings.some((warning) => warning.code === 'MISSING_BASE_SERVINGS')
+    !normalizedWarnings.some(
+      (warning) => warning.code === 'MISSING_BASE_SERVINGS',
+    )
   ) {
     normalizedWarnings.push({
       code: 'MISSING_BASE_SERVINGS',

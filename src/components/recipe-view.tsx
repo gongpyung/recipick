@@ -33,10 +33,8 @@ function ConfidenceBadge({ confidence }: { confidence: RecipeConfidence }) {
   return (
     <span
       className={cn(
-        'font-body inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide',
-        confidence === 'low'
-          ? 'bg-[#ffcdd2]/30 text-[#c62828]'
-          : 'badge-gold',
+        'font-body inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase',
+        confidence === 'low' ? 'bg-[#ffcdd2]/30 text-[#c62828]' : 'badge-gold',
       )}
     >
       {confidence === 'low' ? '확인 필요' : '추정'}
@@ -53,9 +51,8 @@ function SeverityIcon({ severity }: { severity: WarningSeverity }) {
 }
 
 export function RecipeView({ recipeId }: { recipeId: string }) {
-  const { data, error, isLoading, mutate } = useSWR(
-    ['recipe', recipeId],
-    () => getRecipe(recipeId),
+  const { data, error, isLoading, mutate } = useSWR(['recipe', recipeId], () =>
+    getRecipe(recipeId),
   );
   const [targetServings, setTargetServings] = useState(2);
   const [copied, setCopied] = useState(false);
@@ -116,10 +113,12 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
     return (
       <div className="print-full">
         <div className="relative">
-          <div className="absolute -top-1.5 left-3 right-3 h-full bg-[#f8bbd9]/30 rounded-3xl" />
-          <div className="absolute -top-0.5 left-1.5 right-1.5 h-full bg-[#f8bbd9]/50 rounded-3xl" />
-          <div className="relative bg-white rounded-3xl p-6 md:p-8 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
-            <h2 className="font-display mb-8 text-xl text-[#6b5b4f]">레시피 수정</h2>
+          <div className="absolute -top-1.5 right-3 left-3 h-full rounded-3xl bg-[#f8bbd9]/30" />
+          <div className="absolute -top-0.5 right-1.5 left-1.5 h-full rounded-3xl bg-[#f8bbd9]/50" />
+          <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-6 shadow-xl shadow-[#f8bbd9]/20 md:p-8">
+            <h2 className="font-display mb-8 text-xl text-[#6b5b4f]">
+              레시피 수정
+            </h2>
             <RecipeEditForm
               initialData={{
                 title: data.title,
@@ -147,29 +146,29 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
     <div className="print-full space-y-6">
       {/* ===== RECIPE HEADER ===== */}
       <div className="relative">
-        <div className="absolute -top-1 left-2 right-2 h-full bg-[#f8bbd9]/30 rounded-3xl" />
-        <div className="relative bg-white rounded-3xl p-5 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
+        <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#f8bbd9]/30" />
+        <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-5 shadow-xl shadow-[#f8bbd9]/20">
           {/* Top navigation */}
-          <div className="flex items-center justify-between mb-4 no-print">
+          <div className="no-print mb-4 flex items-center justify-between">
             <Link
               href="/"
-              className="w-10 h-10 bg-[#fef7f9] rounded-2xl flex items-center justify-center hover:bg-[#fce4ec] transition-colors cursor-pointer"
+              className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#fef7f9] transition-colors hover:bg-[#fce4ec]"
             >
-              <ArrowLeft className="w-5 h-5 text-[#6b5b4f]" />
+              <ArrowLeft className="h-5 w-5 text-[#6b5b4f]" />
             </Link>
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopy}
-                className="w-10 h-10 bg-[#fef7f9] rounded-2xl flex items-center justify-center hover:bg-[#fce4ec] transition-colors cursor-pointer"
+                className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#fef7f9] transition-colors hover:bg-[#fce4ec]"
               >
                 {copied ? (
-                  <Check className="w-5 h-5 text-[#2e5f30]" />
+                  <Check className="h-5 w-5 text-[#2e5f30]" />
                 ) : (
-                  <Share2 className="w-5 h-5 text-[#6b5b4f]" />
+                  <Share2 className="h-5 w-5 text-[#6b5b4f]" />
                 )}
               </button>
-              <button className="w-10 h-10 bg-[#ffcdd2] rounded-2xl flex items-center justify-center hover:bg-[#ef9a9a] transition-colors cursor-pointer">
-                <Heart className="w-5 h-5 text-[#e53935] fill-current" />
+              <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#ffcdd2] transition-colors hover:bg-[#ef9a9a]">
+                <Heart className="h-5 w-5 fill-current text-[#e53935]" />
               </button>
             </div>
           </div>
@@ -181,23 +180,25 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                 href={data.youtubeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex items-center gap-2 px-3 py-1.5 bg-[#c8e6c9] rounded-full mb-3 cursor-pointer hover:bg-[#a5d6a7] transition-colors"
+                className="mb-3 inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#c8e6c9] px-3 py-1.5 transition-colors hover:bg-[#a5d6a7]"
               >
                 <span className="text-sm">🎬</span>
-                <span className="text-xs font-medium text-[#2e5f30]">원본 영상 보기</span>
+                <span className="text-xs font-medium text-[#2e5f30]">
+                  원본 영상 보기
+                </span>
               </a>
             )}
-            <h1 className="text-2xl font-display text-[#4a4a4a] mb-2">
+            <h1 className="font-display mb-2 text-2xl text-[#4a4a4a]">
               {data.title}
             </h1>
             {data.summary && (
-              <p className="font-body text-sm leading-relaxed text-[#8b7b7b] mb-2">
+              <p className="font-body mb-2 text-sm leading-relaxed text-[#8b7b7b]">
                 {data.summary}
               </p>
             )}
             <div className="flex items-center justify-center gap-4 text-sm text-[#8b7b7b]">
               <span className="flex items-center gap-1.5">
-                <Clock className="w-4 h-4 text-[#e8a4b8]" />
+                <Clock className="h-4 w-4 text-[#e8a4b8]" />
                 {data.baseServings ? `${data.baseServings}인분` : '인분 미정'}
               </span>
             </div>
@@ -216,24 +217,26 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
       <div className="grid gap-6 lg:grid-cols-[1fr_1.3fr]">
         {/* INGREDIENTS */}
         <div className="relative">
-          <div className="absolute -top-1 left-2 right-2 h-full bg-[#c8e6c9]/40 rounded-3xl" />
-          <div className="relative bg-white rounded-3xl p-4 shadow-xl shadow-[#c8e6c9]/20 border border-[#c8e6c9]/30">
+          <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#c8e6c9]/40" />
+          <div className="relative rounded-3xl border border-[#c8e6c9]/30 bg-white p-4 shadow-xl shadow-[#c8e6c9]/20">
             {/* Header */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[#c8e6c9] rounded-xl flex items-center justify-center">
-                <ShoppingBasket className="w-4 h-4 text-[#2e5f30]" />
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#c8e6c9]">
+                <ShoppingBasket className="h-4 w-4 text-[#2e5f30]" />
               </div>
               <h2 className="text-base font-semibold text-[#6b5b4f]">재료</h2>
               {data.baseServings && targetServings !== data.baseServings && (
-                <span className="text-xs font-semibold text-[#e8a4b8] ml-auto">
+                <span className="ml-auto text-xs font-semibold text-[#e8a4b8]">
                   {targetServings}인분 기준
                 </span>
               )}
-              <span className="text-xs text-[#8b7b7b] ml-auto">{scaledIngredients.length}가지</span>
+              <span className="ml-auto text-xs text-[#8b7b7b]">
+                {scaledIngredients.length}가지
+              </span>
             </div>
 
             {/* Ingredient list */}
-            <div className="space-y-0 rounded-2xl overflow-hidden">
+            <div className="space-y-0 overflow-hidden rounded-2xl">
               {scaledIngredients.map((ingredient, index) => (
                 <div
                   key={`${ingredient.name}-${index}`}
@@ -243,11 +246,11 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                     ingredient.confidence === 'low' && 'opacity-50',
                   )}
                 >
-                  <div className="flex flex-1 items-center gap-3 min-w-0">
-                    <span className="w-6 h-6 bg-[#f8bbd9]/50 rounded-lg flex items-center justify-center text-xs text-[#e8a4b8]">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
+                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
                       {index + 1}
                     </span>
-                    <span className="font-body text-sm text-[#4a4a4a] break-keep">
+                    <span className="font-body text-sm break-keep text-[#4a4a4a]">
                       {ingredient.name}
                     </span>
                     {ingredient.note && (
@@ -257,7 +260,7 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                     )}
                     <ConfidenceBadge confidence={ingredient.confidence} />
                   </div>
-                  <span className="text-sm font-medium text-[#6b5b4f] bg-[#fce4ec] px-2.5 py-1 rounded-lg shrink-0">
+                  <span className="shrink-0 rounded-lg bg-[#fce4ec] px-2.5 py-1 text-sm font-medium text-[#6b5b4f]">
                     <span className="font-bold">
                       {ingredient.scaled.displayAmount ?? '적당량'}
                     </span>{' '}
@@ -273,38 +276,50 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
 
         {/* STEPS */}
         <div className="relative">
-          <div className="absolute -top-1 left-2 right-2 h-full bg-[#f8bbd9]/40 rounded-3xl" />
-          <div className="relative bg-white rounded-3xl p-4 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
+          <div className="absolute -top-1 right-2 left-2 h-full rounded-3xl bg-[#f8bbd9]/40" />
+          <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-4 shadow-xl shadow-[#f8bbd9]/20">
             {/* Header */}
-            <div className="flex items-center gap-2 mb-4">
-              <div className="w-8 h-8 bg-[#f8bbd9] rounded-xl flex items-center justify-center">
-                <ChefHat className="w-4 h-4 text-[#ad1457]" />
+            <div className="mb-4 flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#f8bbd9]">
+                <ChefHat className="h-4 w-4 text-[#ad1457]" />
               </div>
-              <h2 className="text-base font-semibold text-[#6b5b4f]">조리 순서</h2>
-              <span className="text-xs text-[#8b7b7b] ml-auto">{data.steps.length}단계</span>
+              <h2 className="text-base font-semibold text-[#6b5b4f]">
+                조리 순서
+              </h2>
+              <span className="ml-auto text-xs text-[#8b7b7b]">
+                {data.steps.length}단계
+              </span>
             </div>
 
             {/* Steps list */}
             <div className="relative">
               {/* Connecting line */}
-              <div className="absolute left-4 top-6 bottom-6 w-0.5 bg-gradient-to-b from-[#f8bbd9] via-[#e8a4b8] to-[#f8bbd9]" />
+              <div className="absolute top-6 bottom-6 left-4 w-0.5 bg-gradient-to-b from-[#f8bbd9] via-[#e8a4b8] to-[#f8bbd9]" />
 
               <div className="space-y-4">
                 {data.steps.map((step, index) => (
-                  <div key={step.stepNo} className="flex gap-4 relative">
+                  <div key={step.stepNo} className="relative flex gap-4">
                     {/* Step number badge */}
-                    <div className="relative z-10 w-8 h-8 bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] rounded-full flex items-center justify-center shadow-md flex-shrink-0">
-                      <span className="text-sm font-bold text-white">{step.stepNo}</span>
+                    <div className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-md">
+                      <span className="text-sm font-bold text-white">
+                        {step.stepNo}
+                      </span>
                     </div>
 
                     {/* Step content */}
-                    <div className={cn(
-                      'flex-1 p-3 rounded-2xl',
-                      index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-[#fce4ec]/30',
-                    )}>
-                      <p className="font-body text-sm text-[#4a4a4a] leading-relaxed">{step.text}</p>
+                    <div
+                      className={cn(
+                        'flex-1 rounded-2xl p-3',
+                        index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-[#fce4ec]/30',
+                      )}
+                    >
+                      <p className="font-body text-sm leading-relaxed text-[#4a4a4a]">
+                        {step.text}
+                      </p>
                       {step.note && (
-                        <p className="font-body mt-2 text-xs text-[#8b7b7b]">{step.note}</p>
+                        <p className="font-body mt-2 text-xs text-[#8b7b7b]">
+                          {step.note}
+                        </p>
                       )}
                       {step.confidence !== 'high' && (
                         <div className="mt-2">
@@ -326,21 +341,25 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
           {/* Tips Card */}
           {data.tips.length > 0 && (
             <div className="relative">
-              <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#a5d6a7]/30 rounded-2xl" />
-              <div className="relative bg-[#e8f5e9] rounded-2xl p-4 shadow-lg shadow-[#c8e6c9]/20 border border-[#c8e6c9]/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 bg-[#c8e6c9] rounded-xl flex items-center justify-center">
-                    <Lightbulb className="w-4 h-4 text-[#2e5f30]" />
+              <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#a5d6a7]/30" />
+              <div className="relative rounded-2xl border border-[#c8e6c9]/50 bg-[#e8f5e9] p-4 shadow-lg shadow-[#c8e6c9]/20">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#c8e6c9]">
+                    <Lightbulb className="h-4 w-4 text-[#2e5f30]" />
                   </div>
-                  <h2 className="text-sm font-semibold text-[#2e5f30]">요리 팁</h2>
+                  <h2 className="text-sm font-semibold text-[#2e5f30]">
+                    요리 팁
+                  </h2>
                 </div>
                 <div className="space-y-2">
                   {data.tips.map((tip, i) => (
                     <div key={i} className="flex items-start gap-2">
-                      <span className="w-5 h-5 bg-[#c8e6c9] rounded-lg flex items-center justify-center text-xs text-[#2e5f30] flex-shrink-0 mt-0.5">
+                      <span className="mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-lg bg-[#c8e6c9] text-xs text-[#2e5f30]">
                         {i + 1}
                       </span>
-                      <p className="text-sm text-[#4a4a4a] leading-relaxed">{tip}</p>
+                      <p className="text-sm leading-relaxed text-[#4a4a4a]">
+                        {tip}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -351,20 +370,24 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
           {/* Warnings Card */}
           {data.warnings.length > 0 && (
             <div className="relative">
-              <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#ffcc80]/30 rounded-2xl" />
-              <div className="relative bg-[#fff8e1] rounded-2xl p-4 shadow-lg shadow-[#ffe0b2]/20 border border-[#ffe0b2]/50">
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="w-7 h-7 bg-[#ffe0b2] rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="w-4 h-4 text-[#e65100]" />
+              <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#ffcc80]/30" />
+              <div className="relative rounded-2xl border border-[#ffe0b2]/50 bg-[#fff8e1] p-4 shadow-lg shadow-[#ffe0b2]/20">
+                <div className="mb-3 flex items-center gap-2">
+                  <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#ffe0b2]">
+                    <AlertTriangle className="h-4 w-4 text-[#e65100]" />
                   </div>
-                  <h2 className="text-sm font-semibold text-[#e65100]">주의사항</h2>
+                  <h2 className="text-sm font-semibold text-[#e65100]">
+                    주의사항
+                  </h2>
                 </div>
                 <div className="space-y-2">
                   {data.warnings.map((warning, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <SeverityIcon severity={warning.severity} />
                       <div>
-                        <p className="font-body text-sm font-medium text-[#4a4a4a]">{warning.message}</p>
+                        <p className="font-body text-sm font-medium text-[#4a4a4a]">
+                          {warning.message}
+                        </p>
                       </div>
                     </div>
                   ))}
@@ -377,27 +400,29 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
 
       {/* ===== ACTION BUTTONS ===== */}
       <div className="no-print relative">
-        <div className="absolute -top-0.5 left-1 right-1 h-full bg-[#e1bee7]/30 rounded-2xl" />
-        <div className="relative bg-white rounded-2xl p-4 shadow-lg shadow-[#e1bee7]/20 border border-[#e1bee7]/30">
+        <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#e1bee7]/30" />
+        <div className="relative rounded-2xl border border-[#e1bee7]/30 bg-white p-4 shadow-lg shadow-[#e1bee7]/20">
           <div className="grid grid-cols-3 gap-3">
             {/* Edit button */}
             <button
               onClick={() => setIsEditing(true)}
-              className="flex flex-col items-center gap-2 p-3 bg-[#fef7f9] rounded-2xl hover:bg-[#fce4ec] transition-colors group cursor-pointer"
+              className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl bg-[#fef7f9] p-3 transition-colors hover:bg-[#fce4ec]"
             >
-              <div className="w-10 h-10 bg-[#f8bbd9] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Edit3 className="w-5 h-5 text-[#ad1457]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f8bbd9] transition-transform group-hover:scale-105">
+                <Edit3 className="h-5 w-5 text-[#ad1457]" />
               </div>
-              <span className="text-xs font-medium text-[#6b5b4f]">수정하기</span>
+              <span className="text-xs font-medium text-[#6b5b4f]">
+                수정하기
+              </span>
             </button>
 
             {/* Copy link button */}
             <button
               onClick={handleCopy}
-              className="flex flex-col items-center gap-2 p-3 bg-[#fef7f9] rounded-2xl hover:bg-[#fce4ec] transition-colors group cursor-pointer"
+              className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl bg-[#fef7f9] p-3 transition-colors hover:bg-[#fce4ec]"
             >
-              <div className="w-10 h-10 bg-[#c8e6c9] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                <Link2 className="w-5 h-5 text-[#2e5f30]" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#c8e6c9] transition-transform group-hover:scale-105">
+                <Link2 className="h-5 w-5 text-[#2e5f30]" />
               </div>
               <span className="text-xs font-medium text-[#6b5b4f]">
                 {copyFailed ? '복사 실패' : copied ? '복사됨!' : '링크 복사'}
@@ -410,22 +435,26 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                 href={data.youtubeUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col items-center gap-2 p-3 bg-[#fef7f9] rounded-2xl hover:bg-[#fce4ec] transition-colors group cursor-pointer"
+                className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl bg-[#fef7f9] p-3 transition-colors hover:bg-[#fce4ec]"
               >
-                <div className="w-10 h-10 bg-[#ffcdd2] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <ExternalLink className="w-5 h-5 text-[#c62828]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffcdd2] transition-transform group-hover:scale-105">
+                  <ExternalLink className="h-5 w-5 text-[#c62828]" />
                 </div>
-                <span className="text-xs font-medium text-[#6b5b4f]">원본 영상</span>
+                <span className="text-xs font-medium text-[#6b5b4f]">
+                  원본 영상
+                </span>
               </a>
             ) : (
               <Link
                 href="/"
-                className="flex flex-col items-center gap-2 p-3 bg-[#fef7f9] rounded-2xl hover:bg-[#fce4ec] transition-colors group cursor-pointer"
+                className="group flex cursor-pointer flex-col items-center gap-2 rounded-2xl bg-[#fef7f9] p-3 transition-colors hover:bg-[#fce4ec]"
               >
-                <div className="w-10 h-10 bg-[#ffcdd2] rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform">
-                  <ExternalLink className="w-5 h-5 text-[#c62828]" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffcdd2] transition-transform group-hover:scale-105">
+                  <ExternalLink className="h-5 w-5 text-[#c62828]" />
                 </div>
-                <span className="text-xs font-medium text-[#6b5b4f]">새 추출</span>
+                <span className="text-xs font-medium text-[#6b5b4f]">
+                  새 추출
+                </span>
               </Link>
             )}
           </div>

@@ -1,101 +1,101 @@
 function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function flattenContentParts(value: unknown): string {
   if (typeof value === 'string') {
-    return value
+    return value;
   }
 
   if (!Array.isArray(value)) {
-    return ''
+    return '';
   }
 
   return value
     .map((part) => {
       if (typeof part === 'string') {
-        return part
+        return part;
       }
 
       if (!isRecord(part)) {
-        return ''
+        return '';
       }
 
       if (typeof part.text === 'string') {
-        return part.text
+        return part.text;
       }
 
       if (typeof part.content === 'string') {
-        return part.content
+        return part.content;
       }
 
-      return ''
+      return '';
     })
     .filter(Boolean)
-    .join('\n')
+    .join('\n');
 }
 
 function findBalancedJsonSegment(value: string) {
-  const startIndex = value.search(/[\[{]/)
+  const startIndex = value.search(/[\[{]/);
 
   if (startIndex === -1) {
-    return null
+    return null;
   }
 
-  const stack: string[] = []
-  let inString = false
-  let escaping = false
+  const stack: string[] = [];
+  let inString = false;
+  let escaping = false;
 
   for (let index = startIndex; index < value.length; index += 1) {
-    const character = value[index]
+    const character = value[index];
 
     if (inString) {
       if (escaping) {
-        escaping = false
-        continue
+        escaping = false;
+        continue;
       }
 
       if (character === '\\') {
-        escaping = true
-        continue
+        escaping = true;
+        continue;
       }
 
       if (character === '"') {
-        inString = false
+        inString = false;
       }
 
-      continue
+      continue;
     }
 
     if (character === '"') {
-      inString = true
-      continue
+      inString = true;
+      continue;
     }
 
     if (character === '{' || character === '[') {
-      stack.push(character)
-      continue
+      stack.push(character);
+      continue;
     }
 
     if (character === '}' || character === ']') {
-      const opener = stack.at(-1)
+      const opener = stack.at(-1);
 
       if (
         (character === '}' && opener !== '{') ||
         (character === ']' && opener !== '[')
       ) {
-        return null
+        return null;
       }
 
-      stack.pop()
+      stack.pop();
 
       if (stack.length === 0) {
-        return value.slice(startIndex, index + 1)
+        return value.slice(startIndex, index + 1);
       }
     }
   }
 
-  return null
+  return null;
 }
 
 export class JsonParserError extends Error {
@@ -104,56 +104,59 @@ export class JsonParserError extends Error {
     public readonly rawText: string,
     options?: ErrorOptions,
   ) {
-    super(message, options)
-    this.name = 'JsonParserError'
+    super(message, options);
+    this.name = 'JsonParserError';
   }
 }
 
 export function extractTextFromLlmPayload(payload: unknown): string {
   if (typeof payload === 'string') {
-    return payload.trim()
+    return payload.trim();
   }
 
   if (!isRecord(payload)) {
-    throw new JsonParserError('LLM payload did not contain readable text.', String(payload))
+    throw new JsonParserError(
+      'LLM payload did not contain readable text.',
+      String(payload),
+    );
   }
 
   if (typeof payload.output_text === 'string') {
-    return payload.output_text.trim()
+    return payload.output_text.trim();
   }
 
   if (typeof payload.content === 'string') {
-    return payload.content.trim()
+    return payload.content.trim();
   }
 
-  const flatContent = flattenContentParts(payload.content)
+  const flatContent = flattenContentParts(payload.content);
 
   if (flatContent) {
-    return flatContent.trim()
+    return flatContent.trim();
   }
 
   if (Array.isArray(payload.choices)) {
     for (const choice of payload.choices) {
       if (!isRecord(choice)) {
-        continue
+        continue;
       }
 
-      const message = isRecord(choice.message) ? choice.message : null
+      const message = isRecord(choice.message) ? choice.message : null;
 
       if (message) {
         if (typeof message.content === 'string' && message.content.trim()) {
-          return message.content.trim()
+          return message.content.trim();
         }
 
-        const flatMessageContent = flattenContentParts(message.content)
+        const flatMessageContent = flattenContentParts(message.content);
 
         if (flatMessageContent) {
-          return flatMessageContent.trim()
+          return flatMessageContent.trim();
         }
       }
 
       if (typeof choice.text === 'string' && choice.text.trim()) {
-        return choice.text.trim()
+        return choice.text.trim();
       }
     }
   }
@@ -161,43 +164,46 @@ export function extractTextFromLlmPayload(payload: unknown): string {
   throw new JsonParserError(
     'LLM payload did not contain readable text.',
     JSON.stringify(payload),
-  )
+  );
 }
 
 export function extractJsonText(rawText: string) {
-  const trimmed = rawText.trim()
-  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  const trimmed = rawText.trim();
+  const fencedMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)```/i);
 
   if (fencedMatch?.[1]) {
-    return fencedMatch[1].trim()
+    return fencedMatch[1].trim();
   }
 
-  const balanced = findBalancedJsonSegment(trimmed)
+  const balanced = findBalancedJsonSegment(trimmed);
 
   if (balanced) {
-    return balanced.trim()
+    return balanced.trim();
   }
 
-  throw new JsonParserError('Model output did not contain a JSON object or array.', rawText)
+  throw new JsonParserError(
+    'Model output did not contain a JSON object or array.',
+    rawText,
+  );
 }
 
 export function parseJsonText<T>(rawText: string): T {
-  const jsonText = extractJsonText(rawText)
+  const jsonText = extractJsonText(rawText);
 
   try {
-    return JSON.parse(jsonText) as T
+    return JSON.parse(jsonText) as T;
   } catch (error) {
     throw new JsonParserError('Model output contained invalid JSON.', rawText, {
       cause: error,
-    })
+    });
   }
 }
 
 export function parseLlmJsonPayload<T>(payload: unknown) {
-  const text = extractTextFromLlmPayload(payload)
+  const text = extractTextFromLlmPayload(payload);
 
   return {
     text,
     data: parseJsonText<T>(text),
-  }
+  };
 }

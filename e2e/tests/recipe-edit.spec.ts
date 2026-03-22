@@ -19,7 +19,9 @@ test.describe('레시피 편집 모드', () => {
     // 저장
     await page.getByText('저장하기').click();
     // 뷰 모드로 복귀 확인 (편집 헤더 사라짐)
-    await expect(page.getByText('레시피 수정')).not.toBeVisible({ timeout: 5_000 });
+    await expect(page.getByText('레시피 수정')).not.toBeVisible({
+      timeout: 5_000,
+    });
   });
 
   test('변경 후 취소 시 확인 다이얼로그 표시', async ({ page }) => {
@@ -35,16 +37,26 @@ test.describe('레시피 편집 모드', () => {
 
   test('재료 추가/삭제 동작', async ({ page }) => {
     // 현재 재료 수 확인
-    const initialCount = await page.locator('input[placeholder="재료명"]').count();
+    const initialCount = await page
+      .locator('input[placeholder="재료명"]')
+      .count();
     // 재료 추가
     await page.getByText('재료 추가').click();
-    const afterAddCount = await page.locator('input[placeholder="재료명"]').count();
+    const afterAddCount = await page
+      .locator('input[placeholder="재료명"]')
+      .count();
     expect(afterAddCount).toBe(initialCount + 1);
     // 마지막 재료 행에서 삭제 버튼 클릭 — 재료 입력과 같은 행에 있는 trash 버튼 찾기
-    const lastIngredientInput = page.locator('input[placeholder="재료명"]').last();
+    const lastIngredientInput = page
+      .locator('input[placeholder="재료명"]')
+      .last();
     // 재료 행(rounded-2xl div)에서 trash 버튼을 찾기
-    const lastIngredientRow = lastIngredientInput.locator('xpath=ancestor::div[contains(@class,"p-3")]');
+    const lastIngredientRow = lastIngredientInput.locator(
+      'xpath=ancestor::div[contains(@class,"p-3")]',
+    );
     await lastIngredientRow.locator('svg.lucide-trash-2').locator('..').click();
-    await expect(page.locator('input[placeholder="재료명"]')).toHaveCount(initialCount);
+    await expect(page.locator('input[placeholder="재료명"]')).toHaveCount(
+      initialCount,
+    );
   });
 });

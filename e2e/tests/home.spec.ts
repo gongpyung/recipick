@@ -5,9 +5,13 @@ import { EXTRACTION_CREATE_RESPONSE } from '../fixtures/extraction';
 test.describe('홈 페이지', () => {
   test('hero 타이틀과 입력창이 표시된다', async ({ page }) => {
     await page.goto('/');
-    await expect(page.getByRole('heading', { name: /당신이 본 요리 영상/ })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: /당신이 본 요리 영상/ }),
+    ).toBeVisible();
     await expect(page.getByPlaceholder(/youtube\.com/i)).toBeVisible();
-    await expect(page.getByRole('button', { name: '레시피 픽하기' })).toBeVisible();
+    await expect(
+      page.getByRole('button', { name: '레시피 픽하기' }),
+    ).toBeVisible();
   });
 
   test('빈 URL 제출 시 에러 메시지 표시', async ({ page }) => {
@@ -26,13 +30,17 @@ test.describe('홈 페이지', () => {
     await input.fill('https://example.com/not-youtube');
     await page.getByRole('button', { name: '레시피 픽하기' }).click();
     // The URL parser returns "Unsupported YouTube URL format."
-    await expect(page.getByText('Unsupported YouTube URL format.')).toBeVisible();
+    await expect(
+      page.getByText('Unsupported YouTube URL format.'),
+    ).toBeVisible();
   });
 
   test('유효한 URL 제출 시 추출 페이지로 이동', async ({ page }) => {
     await mockExtractionCreate(page, EXTRACTION_CREATE_RESPONSE);
     await page.goto('/');
-    await page.getByPlaceholder(/youtube\.com/i).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    await page
+      .getByPlaceholder(/youtube\.com/i)
+      .fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     await page.getByRole('button', { name: '레시피 픽하기' }).click();
     await page.waitForURL(/\/extractions\//);
     expect(page.url()).toContain('/extractions/ext-001');
@@ -48,8 +56,12 @@ test.describe('홈 페이지', () => {
       return route.continue();
     });
     await page.goto('/');
-    await page.getByPlaceholder(/youtube\.com/i).fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    await page
+      .getByPlaceholder(/youtube\.com/i)
+      .fill('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
     await page.getByRole('button', { name: '레시피 픽하기' }).click();
-    await expect(page.getByText('레시피 추출 중...')).toBeVisible({ timeout: 3000 });
+    await expect(page.getByText('레시피 추출 중...')).toBeVisible({
+      timeout: 3000,
+    });
   });
 });

@@ -56,19 +56,23 @@ export function UrlInputForm() {
   return (
     <div className="relative">
       {/* Decorative layered cards behind */}
-      <div className="absolute -top-2 left-2 right-2 h-full bg-[#ffe0b2]/60 rounded-3xl transform rotate-1" />
-      <div className="absolute -top-1 left-1 right-1 h-full bg-[#c8e6c9]/60 rounded-3xl transform -rotate-1" />
+      <div className="absolute -top-2 right-2 left-2 h-full rotate-1 transform rounded-3xl bg-[#ffe0b2]/60" />
+      <div className="absolute -top-1 right-1 left-1 h-full -rotate-1 transform rounded-3xl bg-[#c8e6c9]/60" />
 
       {/* Main card */}
-      <div className="relative bg-white rounded-3xl p-5 shadow-xl shadow-[#f8bbd9]/20 border border-[#f8bbd9]/30">
+      <div className="relative rounded-3xl border border-[#f8bbd9]/30 bg-white p-5 shadow-xl shadow-[#f8bbd9]/20">
         {/* Card title */}
-        <div className="flex items-center gap-2 mb-4">
-          <div className="w-8 h-8 bg-[#ffcdd2] rounded-xl flex items-center justify-center">
-            <Youtube className="w-4 h-4 text-[#e53935]" />
+        <div className="mb-4 flex items-center gap-2">
+          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#ffcdd2]">
+            <Youtube className="h-4 w-4 text-[#e53935]" />
           </div>
           <div>
-            <h2 className="text-base font-semibold text-[#4a4a4a]">영상에서 레시피 추출</h2>
-            <p className="text-xs text-[#8b7b7b]">YouTube 링크를 붙여넣으세요</p>
+            <h2 className="text-base font-semibold text-[#4a4a4a]">
+              영상에서 레시피 추출
+            </h2>
+            <p className="text-xs text-[#8b7b7b]">
+              YouTube 링크를 붙여넣으세요
+            </p>
           </div>
         </div>
 
@@ -85,7 +89,7 @@ export function UrlInputForm() {
               onFocus={handleClipboardSuggestion}
               autoComplete="off"
               inputMode="url"
-              className="w-full px-4 py-3 bg-[#fef7f9] border border-[#f8bbd9]/50 rounded-2xl text-sm text-[#4a4a4a] placeholder:text-[#c8b8b8] focus:outline-none focus:ring-2 focus:ring-[#e8a4b8]/50 focus:border-transparent transition-all h-12"
+              className="h-12 w-full rounded-2xl border border-[#f8bbd9]/50 bg-[#fef7f9] px-4 py-3 text-sm text-[#4a4a4a] transition-all placeholder:text-[#c8b8b8] focus:border-transparent focus:ring-2 focus:ring-[#e8a4b8]/50 focus:outline-none"
             />
           </div>
 
@@ -93,7 +97,7 @@ export function UrlInputForm() {
           <Button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 h-12 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] text-white font-medium rounded-2xl shadow-lg shadow-[#f8bbd9]/30 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-xl hover:shadow-[#f8bbd9]/40 transition-all active:scale-[0.98] border-0 cursor-pointer"
+            className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl border-0 bg-gradient-to-r from-[#f8bbd9] to-[#e8a4b8] py-3.5 font-medium text-white shadow-lg shadow-[#f8bbd9]/30 transition-all hover:shadow-xl hover:shadow-[#f8bbd9]/40 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? (
               <>
@@ -112,7 +116,7 @@ export function UrlInputForm() {
             <p className="font-body text-xs text-[#8b7b7b]">{helperText}</p>
             {clipboardValue ? (
               <button
-                className="font-body inline-flex items-center gap-1.5 text-xs font-semibold text-[#e8a4b8] transition-colors hover:text-[#ad1457] cursor-pointer"
+                className="font-body inline-flex cursor-pointer items-center gap-1.5 text-xs font-semibold text-[#e8a4b8] transition-colors hover:text-[#ad1457]"
                 type="button"
                 onClick={() => {
                   setValue(clipboardValue);

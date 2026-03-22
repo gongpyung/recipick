@@ -17,7 +17,9 @@ describe('response helpers', () => {
   });
 
   it('formats known extraction errors with their mapped category', async () => {
-    const error = getExtractionErrorDefinition(ExtractionErrorCode.VIDEO_NOT_FOUND);
+    const error = getExtractionErrorDefinition(
+      ExtractionErrorCode.VIDEO_NOT_FOUND,
+    );
     const response = errorResponse(
       ExtractionErrorCode.VIDEO_NOT_FOUND,
       error.message,

@@ -1,8 +1,4 @@
-export type ExtractionStatus =
-  | 'queued'
-  | 'processing'
-  | 'completed'
-  | 'failed';
+export type ExtractionStatus = 'queued' | 'processing' | 'completed' | 'failed';
 
 export type ExtractionStage =
   | 'validating_url'

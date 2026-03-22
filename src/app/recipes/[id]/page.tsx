@@ -9,7 +9,7 @@ export default async function RecipePage({
   const { id } = await params;
 
   return (
-    <main className="flex-1 min-h-screen bg-gradient-to-b from-[#fce4ec] via-[#fef7f9] to-[#fff8e1] pb-24 md:pb-8">
+    <main className="min-h-screen flex-1 bg-gradient-to-b from-[#fce4ec] via-[#fef7f9] to-[#fff8e1] pb-24 md:pb-8">
       <div className="relative mx-auto w-full max-w-2xl px-4 py-6 lg:max-w-4xl">
         <RecipeView recipeId={id} />
       </div>
