@@ -19,6 +19,11 @@ const ERROR_COPY: Record<
     description: '삭제되었거나 비공개 영상일 수 있습니다.',
     retryable: false,
   },
+  RECIPE_NOT_FOUND: {
+    title: '레시피를 찾을 수 없습니다',
+    description: '이미 삭제되었거나 이동한 레시피일 수 있습니다.',
+    retryable: false,
+  },
   INSUFFICIENT_SOURCE_TEXT: {
     title: '자막 또는 설명 정보가 부족합니다',
     description: '자막이 충분한 영상으로 다시 시도해 주세요.',

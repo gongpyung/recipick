@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **추출 레시피 삭제 기능**
+  - 상세 화면, 홈 최근 레시피, 히스토리 목록에서 삭제 진입점 추가
+  - 공통 `RecipeDeleteButton` 컴포넌트와 삭제 확인 다이얼로그 추가
+  - `DELETE /api/recipes/:id` API 추가
+- **클라이언트 캐시 키 정리**
+  - `cache-keys.ts`로 SWR 키를 공용 상수로 분리
+
+### Changed
+
+- 삭제 후 홈 최근 목록과 히스토리 목록이 SWR 캐시를 즉시 갱신하고 백그라운드 재검증하도록 개선
+- 레시피 aggregate 삭제 시 연결된 extraction도 함께 정리하도록 변경
+- `RECIPE_NOT_FOUND` 전용 에러 카피 추가
+
+### Fixed
+
+- 삭제 관련 캐시 키 하드코딩을 제거해 목록 동기화 불일치 가능성을 낮춤
+- 삭제 경로에서 불필요한 중복 재검증 호출을 정리
+- `deleteRecipeAggregate` 조회 범위를 필요한 필드만 가져오도록 축소
+- ON DELETE CASCADE와 중복되던 일부 자식 삭제 로직 정리
+
 ## [0.1.0] - 2026-03-22
 
 ### Added

@@ -4,7 +4,11 @@ import {
   getExtractionErrorMessage,
   getExtractionErrorStatus,
 } from '@/lib/extraction/errors';
-import { getRecipe, updateRecipeAggregate } from '@/lib/recipe/service';
+import {
+  deleteRecipeAggregate,
+  getRecipe,
+  updateRecipeAggregate,
+} from '@/lib/recipe/service';
 
 export async function GET(
   _request: Request,
@@ -22,6 +26,27 @@ export async function GET(
   }
 
   return successResponse(recipe);
+}
+
+export async function DELETE(
+  _request: Request,
+  context: { params: Promise<{ id: string }> },
+) {
+  const { id } = await context.params;
+  const deleted = await deleteRecipeAggregate(id);
+
+  if (!deleted) {
+    return errorResponse(
+      ExtractionErrorCode.RECIPE_NOT_FOUND,
+      getExtractionErrorMessage(ExtractionErrorCode.RECIPE_NOT_FOUND),
+      getExtractionErrorStatus(ExtractionErrorCode.RECIPE_NOT_FOUND),
+    );
+  }
+
+  return successResponse({
+    id,
+    deleted: true,
+  });
 }
 
 export async function PATCH(

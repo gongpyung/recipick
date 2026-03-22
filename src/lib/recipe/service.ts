@@ -51,7 +51,10 @@ interface RecipesTableClient {
       value: string,
     ): {
       maybeSingle(): Promise<{
-        data: RecipeRow | Pick<RecipeRow, 'id'> | null;
+        data:
+          | RecipeRow
+          | Pick<RecipeRow, 'id' | 'extraction_id'>
+          | null;
         error: PostgrestError | null;
       }>;
     };
@@ -140,12 +143,24 @@ interface VideosTableClient {
   };
 }
 
+interface ExtractionsTableClient {
+  delete(): {
+    eq(
+      column: 'id',
+      value: string,
+    ): Promise<{
+      error: PostgrestError | null;
+    }>;
+  };
+}
+
 interface RecipeSupabaseSubset {
   from(table: 'recipes'): RecipesTableClient;
   from(table: 'ingredients'): ChildTableClient<IngredientRow, IngredientInsert>;
   from(table: 'steps'): ChildTableClient<StepRow, StepInsert>;
   from(table: 'warnings'): ChildTableClient<WarningRow, WarningInsert>;
   from(table: 'videos'): VideosTableClient;
+  from(table: 'extractions'): ExtractionsTableClient;
 }
 
 function getRecipeSupabase() {
@@ -413,6 +428,36 @@ export async function listRecentRecipes(
     thumbnailUrl: videoMap.get(recipe.video_id) ?? null,
     updatedAt: recipe.updated_at,
   }));
+}
+
+export async function deleteRecipeAggregate(recipeId: string) {
+  const supabase = getRecipeSupabase();
+  const recipeResult = await supabase
+    .from('recipes')
+    .select('extraction_id')
+    .eq('id', recipeId)
+    .maybeSingle();
+
+  assertNoSupabaseError(recipeResult.error, 'Failed to fetch recipe.');
+
+  const recipe = recipeResult.data as Pick<RecipeRow, 'extraction_id'> | null;
+
+  if (!recipe) {
+    return false;
+  }
+
+  const [deleteRecipeResult, deleteExtractionResult] = await Promise.all([
+    supabase.from('recipes').delete().eq('id', recipeId),
+    supabase.from('extractions').delete().eq('id', recipe.extraction_id),
+  ]);
+
+  assertNoSupabaseError(deleteRecipeResult.error, 'Failed to delete recipe.');
+  assertNoSupabaseError(
+    deleteExtractionResult.error,
+    'Failed to delete related extraction.',
+  );
+
+  return true;
 }
 
 export async function updateRecipeAggregate(input: {

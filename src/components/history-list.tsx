@@ -2,16 +2,19 @@
 
 import Link from 'next/link';
 import useSWR from 'swr';
-import { ChefHat, Heart } from 'lucide-react';
+import { ChefHat } from 'lucide-react';
 
 import { getRecentRecipes } from '@/lib/api/client';
+import { HISTORY_RECIPES_CACHE_KEY } from '@/lib/api/cache-keys';
 import { ErrorDisplay } from '@/components/error-display';
+import { RecipeDeleteButton } from '@/components/recipe-delete-button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatDate, CARD_COLORS, extractErrorCode } from '@/lib/utils';
 
 export function HistoryList() {
-  const { data, isLoading, error, mutate } = useSWR('recent-recipes-full', () =>
-    getRecentRecipes(),
+  const { data, isLoading, error, mutate } = useSWR(
+    HISTORY_RECIPES_CACHE_KEY,
+    () => getRecentRecipes(),
   );
 
   if (isLoading) {
@@ -84,45 +87,46 @@ export function HistoryList() {
         {/* Recipe grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item, index) => (
-            <Link
-              key={item.id}
-              href={`/recipes/${item.id}`}
-              className="group relative cursor-pointer overflow-hidden rounded-2xl bg-[#fef7f9] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
-            >
-              {/* Thumbnail area */}
-              <div
-                className={`h-32 ${CARD_COLORS[index % CARD_COLORS.length]} flex items-center justify-center`}
+            <div key={item.id} className="relative">
+              <Link
+                href={`/recipes/${item.id}`}
+                className="group block cursor-pointer overflow-hidden rounded-2xl bg-[#fef7f9] transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
               >
-                {item.thumbnailUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.thumbnailUrl}
-                    alt={item.title}
-                    className="h-full w-full object-cover"
-                    loading="lazy"
-                  />
-                ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/60 shadow-sm transition-transform group-hover:scale-110">
-                    <ChefHat className="h-8 w-8 text-[#ad1457]" />
-                  </div>
-                )}
-              </div>
+                <div
+                  className={`h-32 ${CARD_COLORS[index % CARD_COLORS.length]} flex items-center justify-center`}
+                >
+                  {item.thumbnailUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.thumbnailUrl}
+                      alt={item.title}
+                      className="h-full w-full object-cover"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/60 shadow-sm transition-transform group-hover:scale-110">
+                      <ChefHat className="h-8 w-8 text-[#ad1457]" />
+                    </div>
+                  )}
+                </div>
 
-              {/* Heart button */}
-              <div className="absolute top-3 right-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/80 text-[#c8b8b8] shadow-md">
-                <Heart className="h-4 w-4" />
-              </div>
+                <div className="p-3 pr-12">
+                  <h3 className="truncate text-sm font-medium text-[#4a4a4a] transition-colors group-hover:text-[#ad1457]">
+                    {item.title}
+                  </h3>
+                  <p className="mt-1 text-xs text-[#8b7b7b]">
+                    {formatDate(item.updatedAt)}
+                  </p>
+                </div>
+              </Link>
 
-              {/* Info area */}
-              <div className="p-3">
-                <h3 className="truncate text-sm font-medium text-[#4a4a4a] transition-colors group-hover:text-[#ad1457]">
-                  {item.title}
-                </h3>
-                <p className="mt-1 text-xs text-[#8b7b7b]">
-                  {formatDate(item.updatedAt)}
-                </p>
+              <div className="absolute top-3 right-3 z-10">
+                <RecipeDeleteButton
+                  recipeId={item.id}
+                  recipeTitle={item.title}
+                />
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       </div>

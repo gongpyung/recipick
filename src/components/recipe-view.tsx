@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import {
   AlertTriangle,
@@ -12,7 +13,6 @@ import {
   Clock,
   Edit3,
   ExternalLink,
-  Heart,
   Info,
   Lightbulb,
   Link2,
@@ -21,11 +21,13 @@ import {
 } from 'lucide-react';
 
 import { getRecipe } from '@/lib/api/client';
+import { recipeDetailCacheKey } from '@/lib/api/cache-keys';
 import { scaleIngredient } from '@/lib/recipe/scaling';
 import type { RecipeConfidence, WarningSeverity } from '@/lib/extraction/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, extractErrorCode } from '@/lib/utils';
 import { ErrorDisplay } from '@/components/error-display';
+import { RecipeDeleteButton } from '@/components/recipe-delete-button';
 import { ServingControl } from '@/components/serving-control';
 
 const RecipeEditForm = dynamic(
@@ -68,8 +70,10 @@ function SeverityIcon({ severity }: { severity: WarningSeverity }) {
 }
 
 export function RecipeView({ recipeId }: { recipeId: string }) {
-  const { data, error, isLoading, mutate } = useSWR(['recipe', recipeId], () =>
-    getRecipe(recipeId),
+  const router = useRouter();
+  const { data, error, isLoading, mutate } = useSWR(
+    recipeDetailCacheKey(recipeId),
+    () => getRecipe(recipeId),
   );
   const [targetServings, setTargetServings] = useState(2);
   const [copied, setCopied] = useState(false);
@@ -183,9 +187,6 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                 ) : (
                   <Share2 className="h-5 w-5 text-[#6b5b4f]" />
                 )}
-              </button>
-              <button className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-2xl bg-[#ffcdd2] transition-colors hover:bg-[#ef9a9a]">
-                <Heart className="h-5 w-5 fill-current text-[#e53935]" />
               </button>
             </div>
           </div>
@@ -419,7 +420,7 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
       <div className="no-print relative">
         <div className="absolute -top-0.5 right-1 left-1 h-full rounded-2xl bg-[#e1bee7]/30" />
         <div className="relative rounded-2xl border border-[#e1bee7]/30 bg-white p-4 shadow-lg shadow-[#e1bee7]/20">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             {/* Edit button */}
             <button
               onClick={() => setIsEditing(true)}
@@ -474,6 +475,13 @@ export function RecipeView({ recipeId }: { recipeId: string }) {
                 </span>
               </Link>
             )}
+
+            <RecipeDeleteButton
+              recipeId={recipeId}
+              recipeTitle={data.title}
+              mode="card"
+              onDeleted={() => router.replace('/history')}
+            />
           </div>
         </div>
       </div>

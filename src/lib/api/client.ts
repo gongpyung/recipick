@@ -49,6 +49,11 @@ export interface UpdateRecipeResponse {
   updatedAt: string;
 }
 
+export interface DeleteRecipeResponse {
+  id: string;
+  deleted: boolean;
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
@@ -123,5 +128,11 @@ export async function updateRecipe(
   return apiFetch<UpdateRecipeResponse>(`/api/recipes/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(data),
+  });
+}
+
+export async function deleteRecipe(id: string): Promise<DeleteRecipeResponse> {
+  return apiFetch<DeleteRecipeResponse>(`/api/recipes/${id}`, {
+    method: 'DELETE',
   });
 }
