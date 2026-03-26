@@ -313,22 +313,15 @@ export async function getRecipe(
   recipeId: string,
 ): Promise<RecipeDetails | null> {
   const supabase = getRecipeSupabase();
-  const recipeResult = await supabase
-    .from('recipes')
-    .select('*')
-    .eq('id', recipeId)
-    .maybeSingle();
 
-  assertNoSupabaseError(recipeResult.error);
-
-  const recipe = recipeResult.data as RecipeRow | null;
-
-  if (!recipe) {
-    return null;
-  }
-
-  const [ingredientsResult, stepsResult, warningsResult, videoResult] =
+  // Phase 1: recipe + ingredients + steps + warnings를 모두 병렬 실행
+  const [recipeResult, ingredientsResult, stepsResult, warningsResult] =
     await Promise.all([
+      supabase
+        .from('recipes')
+        .select('*')
+        .eq('id', recipeId)
+        .maybeSingle(),
       supabase
         .from('ingredients')
         .select('*')
@@ -344,16 +337,26 @@ export async function getRecipe(
         .select('*')
         .eq('recipe_id', recipeId)
         .order('code', { ascending: true }),
-      supabase
-        .from('videos')
-        .select('id, thumbnail_url, youtube_url')
-        .eq('id', recipe.video_id)
-        .maybeSingle(),
     ]);
 
+  assertNoSupabaseError(recipeResult.error);
   assertNoSupabaseError(ingredientsResult.error);
   assertNoSupabaseError(stepsResult.error);
   assertNoSupabaseError(warningsResult.error);
+
+  const recipe = recipeResult.data as RecipeRow | null;
+
+  if (!recipe) {
+    return null;
+  }
+
+  // Phase 2: video만 recipe.video_id에 의존하므로 순차 실행
+  const videoResult = await supabase
+    .from('videos')
+    .select('id, thumbnail_url, youtube_url')
+    .eq('id', recipe.video_id)
+    .maybeSingle();
+
   assertNoSupabaseError(videoResult.error);
 
   const ingredients = ingredientsResult.data ?? [];

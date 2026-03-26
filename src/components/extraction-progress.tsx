@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import useSWR from 'swr';
+import useSWR, { mutate as globalMutate } from 'swr';
 import {
   Check,
   ChefHat,
@@ -14,7 +14,8 @@ import {
   Video,
 } from 'lucide-react';
 
-import { getExtraction } from '@/lib/api/client';
+import { getExtraction, getRecipe } from '@/lib/api/client';
+import { recipeDetailCacheKey } from '@/lib/api/cache-keys';
 import { ErrorDisplay } from '@/components/error-display';
 import { cn } from '@/lib/utils';
 
@@ -98,7 +99,14 @@ export function ExtractionProgress({ extractionId }: { extractionId: string }) {
 
   useEffect(() => {
     if (data?.status === 'completed' && data.recipeId) {
-      router.push(`/recipes/${data.recipeId}`);
+      const recipeId = data.recipeId;
+      // 레시피 데이터를 SWR 캐시에 미리 채워서 페이지 전환 시 즉시 표시
+      getRecipe(recipeId)
+        .then((recipe) =>
+          globalMutate(recipeDetailCacheKey(recipeId), recipe, false),
+        )
+        .catch(() => {})
+        .finally(() => router.push(`/recipes/${recipeId}`));
     }
   }, [data, router]);
 

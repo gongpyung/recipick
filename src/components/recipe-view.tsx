@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 
 import { getRecipe } from '@/lib/api/client';
+import type { RecipeDetails } from '@/lib/recipe/service';
 import { recipeDetailCacheKey } from '@/lib/api/cache-keys';
 import { scaleIngredient } from '@/lib/recipe/scaling';
 import type { RecipeConfidence, WarningSeverity } from '@/lib/extraction/types';
@@ -69,11 +70,15 @@ function SeverityIcon({ severity }: { severity: WarningSeverity }) {
   return <Info className="size-5 shrink-0 text-blue-500" />;
 }
 
-export function RecipeView({ recipeId }: { recipeId: string }) {
+export function RecipeView({ recipeId, initialData }: { recipeId: string; initialData?: RecipeDetails }) {
   const router = useRouter();
   const { data, error, isLoading, mutate } = useSWR(
     recipeDetailCacheKey(recipeId),
     () => getRecipe(recipeId),
+    {
+      fallbackData: initialData,
+      revalidateOnFocus: false,
+    },
   );
   const [targetServings, setTargetServings] = useState(2);
   const [copied, setCopied] = useState(false);
