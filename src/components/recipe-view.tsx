@@ -77,6 +77,7 @@ export function RecipeView({ recipeId, initialData }: { recipeId: string; initia
     () => getRecipe(recipeId),
     {
       fallbackData: initialData,
+      revalidateOnMount: !initialData,
       revalidateOnFocus: false,
     },
   );
