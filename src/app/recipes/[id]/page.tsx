@@ -4,6 +4,10 @@ import { getRecipe } from '@/lib/recipe/service';
 
 export const revalidate = 300;
 
+export function generateStaticParams() {
+  return [];
+}
+
 export default async function RecipePage({
   params,
 }: {
