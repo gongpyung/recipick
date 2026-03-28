@@ -11,7 +11,17 @@ import { readEnv } from '@/lib/env';
 
 const YOUTUBE_API_BASE_URL = 'https://www.googleapis.com/youtube/v3';
 const REQUEST_TIMEOUT_MS = 5_000;
+const TRANSCRIPT_CALL_TIMEOUT_MS = 8_000;
 const CAPTION_LANGUAGE_PREFERENCES = ['ko', 'ko-KR', 'en', 'en-US'];
+
+function withTranscriptTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const id = setTimeout(() => {
+      reject(new Error(`fetchTranscript timed out after ${ms}ms`));
+    }, ms);
+    promise.then(resolve, reject).finally(() => clearTimeout(id));
+  });
+}
 
 type FetchLike = typeof fetch;
 type FetchTranscriptLike = typeof fetchTranscript;
@@ -355,12 +365,10 @@ export async function fetchCaptions(
 
   for (const language of attempts) {
     try {
-      const transcript = await (options.fetchTranscriptImpl ?? fetchTranscript)(
-        videoId,
-        {
-          lang: language,
-          fetch: options.fetchImpl,
-        },
+      const fetcher = options.fetchTranscriptImpl ?? fetchTranscript;
+      const transcript = await withTranscriptTimeout(
+        fetcher(videoId, { lang: language, fetch: options.fetchImpl }),
+        TRANSCRIPT_CALL_TIMEOUT_MS,
       );
       const track = sortCaptionTracks(tracks).find(
         (candidate) => candidate.language === language,
@@ -395,9 +403,13 @@ export async function fetchCaptions(
   }
 
   try {
-    const transcript = await (options.fetchTranscriptImpl ?? fetchTranscript)(
-      videoId,
-      options.fetchImpl ? { fetch: options.fetchImpl } : undefined,
+    const fallbackFetcher = options.fetchTranscriptImpl ?? fetchTranscript;
+    const transcript = await withTranscriptTimeout(
+      fallbackFetcher(
+        videoId,
+        options.fetchImpl ? { fetch: options.fetchImpl } : undefined,
+      ),
+      TRANSCRIPT_CALL_TIMEOUT_MS,
     );
     const preferredTrack = sortCaptionTracks(tracks)[0];
 
