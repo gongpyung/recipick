@@ -265,33 +265,37 @@ export function RecipeView({ recipeId, initialData }: { recipeId: string; initia
                 <div
                   key={`${ingredient.name}-${index}`}
                   className={cn(
-                    'flex items-center justify-between px-4 py-3',
+                    'px-4 py-3',
                     index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-white',
                     ingredient.confidence === 'low' && 'opacity-50',
                   )}
                 >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
-                      {index + 1}
-                    </span>
-                    <span className="font-body text-sm break-keep text-[#4a4a4a]">
-                      {ingredient.name}
-                    </span>
-                    {ingredient.note && (
-                      <span className="font-body min-w-0 truncate text-xs text-[#8b7b7b]">
-                        {ingredient.note}
+                  <div className="flex items-center justify-between">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
+                        {index + 1}
                       </span>
-                    )}
-                    <ConfidenceBadge confidence={ingredient.confidence} />
+                      <span className="font-body text-sm break-keep text-[#4a4a4a]">
+                        {ingredient.name}
+                      </span>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <ConfidenceBadge confidence={ingredient.confidence} />
+                      <span className="rounded-lg bg-[#fce4ec] px-2.5 py-1 text-sm font-medium text-[#6b5b4f]">
+                        <span className="font-bold">
+                          {ingredient.scaled.displayAmount ?? '적당량'}
+                        </span>{' '}
+                        <span className="text-[#8b7b7b]">
+                          {ingredient.scaled.displayUnit ?? ''}
+                        </span>
+                      </span>
+                    </div>
                   </div>
-                  <span className="shrink-0 rounded-lg bg-[#fce4ec] px-2.5 py-1 text-sm font-medium text-[#6b5b4f]">
-                    <span className="font-bold">
-                      {ingredient.scaled.displayAmount ?? '적당량'}
-                    </span>{' '}
-                    <span className="text-[#8b7b7b]">
-                      {ingredient.scaled.displayUnit ?? ''}
-                    </span>
-                  </span>
+                  {ingredient.note && (
+                    <p className="font-body mt-1 pl-9 text-xs leading-relaxed text-[#8b7b7b]">
+                      {ingredient.note}
+                    </p>
+                  )}
                 </div>
               ))}
             </div>
