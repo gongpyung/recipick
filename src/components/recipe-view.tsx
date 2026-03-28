@@ -320,44 +320,48 @@ export function RecipeView({ recipeId, initialData }: { recipeId: string; initia
             </div>
 
             {/* Steps list */}
-            <div className="space-y-4">
-              {data.steps.map((step, index) => (
-                <div key={step.stepNo} className="relative flex gap-4">
-                  {/* Step number badge + connector */}
-                  <div className="relative flex flex-col items-center">
-                    <div className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-md">
-                      <span className="text-sm font-bold text-white">
-                        {step.stepNo}
-                      </span>
-                    </div>
-                    {index < data.steps.length - 1 && (
-                      <div className="w-0.5 flex-1 bg-gradient-to-b from-[#f8bbd9] to-[#e8a4b8]" />
-                    )}
-                  </div>
-
-                  {/* Step content */}
-                  <div
-                    className={cn(
-                      'flex-1 rounded-2xl p-3',
-                      index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-[#fce4ec]/30',
-                    )}
-                  >
-                    {step.confidence !== 'high' && (
-                      <div className="mb-1.5">
-                        <ConfidenceBadge confidence={step.confidence} />
+            <div>
+              {data.steps.map((step, index) => {
+                const isLast = index === data.steps.length - 1;
+                return (
+                  <div key={step.stepNo} className="relative flex gap-4">
+                    {/* Step number badge + connector */}
+                    <div className="relative flex flex-col items-center">
+                      <div className="relative z-10 flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-[#f8bbd9] to-[#e8a4b8] shadow-md">
+                        <span className="text-sm font-bold text-white">
+                          {step.stepNo}
+                        </span>
                       </div>
-                    )}
-                    <p className="font-body text-sm leading-relaxed text-[#4a4a4a]">
-                      {step.text}
-                    </p>
-                    {step.note && (
-                      <p className="font-body mt-2 text-xs text-[#8b7b7b]">
-                        {step.note}
+                      {!isLast && (
+                        <div className="w-0.5 flex-1 bg-gradient-to-b from-[#f8bbd9] to-[#e8a4b8]" />
+                      )}
+                    </div>
+
+                    {/* Step content */}
+                    <div
+                      className={cn(
+                        'flex-1 rounded-2xl p-3',
+                        index % 2 === 0 ? 'bg-[#fef7f9]' : 'bg-[#fce4ec]/30',
+                        !isLast && 'mb-4',
+                      )}
+                    >
+                      {step.confidence !== 'high' && (
+                        <div className="mb-1.5">
+                          <ConfidenceBadge confidence={step.confidence} />
+                        </div>
+                      )}
+                      <p className="font-body text-sm leading-relaxed text-[#4a4a4a]">
+                        {step.text}
                       </p>
-                    )}
+                      {step.note && (
+                        <p className="font-body mt-2 text-xs text-[#8b7b7b]">
+                          {step.note}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>
