@@ -2,6 +2,8 @@ import { RecipeView } from '@/components/recipe-view';
 import { BottomNav } from '@/components/bottom-nav';
 import { getRecipe } from '@/lib/recipe/service';
 
+export const revalidate = 300;
+
 export default async function RecipePage({
   params,
 }: {

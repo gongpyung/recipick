@@ -1,3 +1,5 @@
+import { revalidatePath } from 'next/cache';
+
 import { errorResponse, successResponse } from '@/lib/api/response';
 import {
   ExtractionErrorCode,
@@ -42,6 +44,8 @@ export async function DELETE(
       getExtractionErrorStatus(ExtractionErrorCode.RECIPE_NOT_FOUND),
     );
   }
+
+  revalidatePath(`/recipes/${id}`);
 
   return successResponse({
     id,
@@ -111,6 +115,8 @@ export async function PATCH(
       confidence: body.confidence,
     },
   });
+
+  revalidatePath(`/recipes/${id}`);
 
   return successResponse({
     id,
