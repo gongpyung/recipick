@@ -53,7 +53,7 @@ function ConfidenceBadge({ confidence }: { confidence: RecipeConfidence }) {
   return (
     <span
       className={cn(
-        'font-body inline-block rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase',
+        'font-body inline-block shrink-0 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[10px] font-bold tracking-wide uppercase',
         confidence === 'low' ? 'bg-[#ffcdd2]/30 text-[#c62828]' : 'badge-gold',
       )}
     >
@@ -271,14 +271,14 @@ export function RecipeView({ recipeId, initialData }: { recipeId: string; initia
                   )}
                 >
                   <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
+                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-[#f8bbd9]/50 text-xs text-[#e8a4b8]">
                       {index + 1}
                     </span>
                     <span className="font-body text-sm break-keep text-[#4a4a4a]">
                       {ingredient.name}
                     </span>
                     {ingredient.note && (
-                      <span className="font-body shrink-0 text-xs text-[#8b7b7b]">
+                      <span className="font-body min-w-0 truncate text-xs text-[#8b7b7b]">
                         {ingredient.note}
                       </span>
                     )}
