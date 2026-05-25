@@ -58,21 +58,11 @@ async function parseJson<T>(response: Response): Promise<T> {
   return (await response.json()) as T;
 }
 
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? '';
-
-function withBasePath(url: string): string {
-  if (!BASE_PATH) return url;
-  if (/^https?:\/\//i.test(url)) return url;
-  if (!url.startsWith('/')) return url;
-  if (url === BASE_PATH || url.startsWith(`${BASE_PATH}/`)) return url;
-  return `${BASE_PATH}${url}`;
-}
-
 export async function apiFetch<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const response = await fetch(withBasePath(url), {
+  const response = await fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
